@@ -12,6 +12,15 @@ body {
   color: var(--rh-color-text);
 }
 
+/* Состояние авторизации в шапке: атрибут hidden должен побеждать
+   утилиты Bootstrap вроде .d-flex (обе с !important, но .d-flex идёт
+   ниже в bootstrap.min.css). Без этого кнопки «Вход»/«Регистрация»
+   остаются видимыми после входа. */
+[data-auth-guest][hidden],
+[data-auth-user][hidden] {
+  display: none !important;
+}
+
 /* Утилита: убрать подчёркивание у ссылок-обёрток карточек */
 .rh-link-reset,
 .rh-link-reset:hover {
