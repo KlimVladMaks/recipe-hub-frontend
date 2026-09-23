@@ -18,5 +18,5 @@ npm-debug.log*
 .cache/
 dist/
 
-# Папка с задачами
-tasks/
+# Папка для обмена информацией с ИИ
+ai_exchange/
