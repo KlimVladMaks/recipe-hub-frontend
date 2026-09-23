@@ -40,11 +40,11 @@ body {
   --bs-btn-active-border-color: var(--rh-color-primary-hover);
 }
 
-/* Иконки из SVG-спрайта */
+/* Иконки из SVG-спрайта: размер и выравнивание.
+   Цвет и способ отрисовки (fill/stroke) задаются внутри symbol. */
 .rh-icon {
   width: 1em;
   height: 1em;
-  fill: currentColor;
   vertical-align: -0.125em;
 }
 
