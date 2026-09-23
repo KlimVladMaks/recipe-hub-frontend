@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Личный кабинет — RecipeHub</title>
+  <link rel="stylesheet" href="../assets/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body data-root="..">
+
+  <header>
+    <nav class="navbar navbar-expand-lg bg-white border-bottom" aria-label="Основная навигация">
+      <div class="container">
+        <a class="navbar-brand fw-semibold" href="../index.html">RecipeHub</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+          data-bs-target="#mainNav" aria-controls="mainNav"
+          aria-expanded="false" aria-label="Переключить навигацию">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="../index.html" data-nav-link>Главная</a></li>
+            <li class="nav-item"><a class="nav-link" href="search.html" data-nav-link>Поиск рецептов</a></li>
+            <li class="nav-item" data-auth-user hidden>
+              <a class="nav-link" href="profile.html" data-nav-link>Личный кабинет</a>
+            </li>
+          </ul>
+          <div class="d-flex gap-2" data-auth-guest>
+            <a class="btn btn-outline-secondary" href="login.html">Вход</a>
+            <a class="btn btn-rh-primary" href="register.html">Регистрация</a>
+          </div>
+          <div class="dropdown" data-auth-user hidden>
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              <svg class="rh-icon me-1" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-user"></use></svg>
+              <span data-auth-username>Пользователь</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="profile.html">Личный кабинет</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item" type="button" data-logout>Выйти</button></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="rh-page py-4 py-lg-5">
+    <div class="container">
+
+      <!-- Предупреждение для неавторизованных -->
+      <div class="alert alert-warning" role="alert" data-profile-guest hidden>
+        Вы не авторизованы. <a href="login.html">Войдите</a> или
+        <a href="register.html">зарегистрируйтесь</a>, чтобы открыть личный кабинет.
+      </div>
+
+      <div data-profile-page hidden>
+        <!-- Шапка профиля -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body d-flex flex-wrap align-items-center gap-3">
+            <div class="rh-placeholder rounded-circle" style="width:4.5rem;height:4.5rem;">
+              <svg class="rh-icon fs-2" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-user"></use></svg>
+            </div>
+            <div class="flex-grow-1">
+              <h1 class="h4 mb-1" data-profile-name>Пользователь</h1>
+              <p class="text-muted mb-1" data-profile-email></p>
+              <p class="mb-0" data-profile-bio></p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-rh-primary" type="button"
+                data-bs-toggle="modal" data-bs-target="#newRecipeModal">
+                <svg class="rh-icon me-1" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-plus"></use></svg>
+                Новый рецепт
+              </button>
+              <button class="btn btn-outline-secondary" type="button"
+                data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                Редактировать
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Разделы кабинета -->
+        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-published" data-bs-toggle="tab"
+              data-bs-target="#pane-published" type="button" role="tab"
+              aria-controls="pane-published" aria-selected="true">Мои публикации</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-saved" data-bs-toggle="tab"
+              data-bs-target="#pane-saved" type="button" role="tab"
+              aria-controls="pane-saved" aria-selected="false">Сохранённые</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-subscriptions" data-bs-toggle="tab"
+              data-bs-target="#pane-subscriptions" type="button" role="tab"
+              aria-controls="pane-subscriptions" aria-selected="false">Подписки</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="pane-published" role="tabpanel"
+            aria-labelledby="tab-published" tabindex="0">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" data-profile-published></div>
+          </div>
+
+          <div class="tab-pane fade" id="pane-saved" role="tabpanel"
+            aria-labelledby="tab-saved" tabindex="0">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" data-profile-saved></div>
+          </div>
+
+          <div class="tab-pane fade" id="pane-subscriptions" role="tabpanel"
+            aria-labelledby="tab-subscriptions" tabindex="0">
+            <div class="row row-cols-1 row-cols-md-3 g-4" data-profile-subscriptions></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Модалка: новый рецепт -->
+  <div class="modal fade" id="newRecipeModal" tabindex="-1" aria-labelledby="newRecipeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <form data-new-recipe-form novalidate>
+          <div class="modal-header">
+            <h2 class="modal-title h5" id="newRecipeModalLabel">Новый рецепт</h2>
+            <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label" for="recipe-title">Название</label>
+              <input class="form-control" type="text" id="recipe-title" name="title" required>
+              <div class="invalid-feedback">Укажите название рецепта.</div>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="recipe-dish-type">Тип блюда</label>
+                <select class="form-select" id="recipe-dish-type" name="dishType" data-filter="dishType">
+                  <option value="">Выберите тип</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="recipe-difficulty">Сложность</label>
+                <select class="form-select" id="recipe-difficulty" name="difficulty" data-filter="difficulty">
+                  <option value="">Выберите сложность</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="recipe-time">Время, минут</label>
+                <input class="form-control" type="number" id="recipe-time" name="timeMinutes" min="1" value="30">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="recipe-servings">Порций</label>
+                <input class="form-control" type="number" id="recipe-servings" name="servings" min="1" value="2">
+              </div>
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="recipe-description">Описание</label>
+              <textarea class="form-control" id="recipe-description" name="description" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="recipe-ingredients">Ингредиенты (через запятую)</label>
+              <input class="form-control" type="text" id="recipe-ingredients" name="ingredients"
+                placeholder="мука, вода, соль">
+            </div>
+            <div class="mb-0">
+              <label class="form-label" for="recipe-steps">Шаги (каждый с новой строки)</label>
+              <textarea class="form-control" id="recipe-steps" name="steps" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Отмена</button>
+            <button class="btn btn-rh-primary" type="submit">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: редактирование профиля -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form data-edit-profile-form novalidate>
+          <div class="modal-header">
+            <h2 class="modal-title h5" id="editProfileModalLabel">Редактирование профиля</h2>
+            <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label" for="profile-name-input">Имя</label>
+              <input class="form-control" type="text" id="profile-name-input" name="name" required>
+            </div>
+            <div class="mb-0">
+              <label class="form-label" for="profile-bio-input">О себе</label>
+              <textarea class="form-control" id="profile-bio-input" name="bio" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Отмена</button>
+            <button class="btn btn-rh-primary" type="submit">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-white border-top py-4 mt-auto">
+    <div class="container">
+      <div class="row gy-3">
+        <div class="col-md-6">
+          <p class="fw-semibold mb-1">RecipeHub</p>
+          <p class="text-muted small mb-0">Учебный проект по фронтенд-разработке, ИТМО.</p>
+        </div>
+        <div class="col-md-6">
+          <ul class="list-unstyled d-flex flex-wrap gap-3 mb-0 justify-content-md-end">
+            <li><a href="../index.html">Главная</a></li>
+            <li><a href="search.html">Поиск</a></li>
+            <li><a href="login.html">Вход</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/main.js"></script>
+  <script type="module" src="../assets/js/auth.js"></script>
+  <script type="module" src="../assets/js/recipes.js"></script>
+  <script type="module" src="../assets/js/profile.js"></script>
+  <script src="../assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>
