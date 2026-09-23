@@ -6,10 +6,7 @@
  * с использованием классов Bootstrap is-invalid / invalid-feedback.
  */
 
-import {
-  addLocalUser,
-  setSessionUserId,
-} from './storage.js';
+import { addLocalUser, setSessionUserId, getSessionUserId } from './storage.js';
 import { getAllUsers, url } from './main.js';
 
 /** Показать/скрыть сообщение об ошибке под полем. */
@@ -53,55 +50,53 @@ function initLoginForm() {
     form.dataset.loginBound = 'true';
 
     form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    resetValidation(form);
+      event.preventDefault();
+      resetValidation(form);
 
-    const email = form.elements.email;
-    const password = form.elements.password;
-    let isValid = true;
+      const email = form.elements.email;
+      const password = form.elements.password;
+      let isValid = true;
 
-    if (!isValidEmail(email.value.trim())) {
-      setFieldError(email, 'Введите корректный e-mail.');
-      isValid = false;
-    } else {
-      setFieldValid(email);
-    }
-
-    if (!password.value) {
-      setFieldError(password, 'Введите пароль.');
-      isValid = false;
-    } else {
-      setFieldValid(password);
-    }
-
-    if (!isValid) return;
-
-    // Демо-аккаунт доступен всегда.
-    const account = getAllUsers().find(
-      (user) => user.email.toLowerCase() === email.value.trim().toLowerCase(),
-    );
-
-    const isDemo =
-      email.value.trim() === 'demo@recipehub.ru' &&
-      password.value === 'demo1234';
-
-    if (isDemo) {
-      setSessionUserId('demo');
-      window.location.href = url('pages/profile.html');
-      return;
-    }
-
-    if (!account || account.password !== password.value) {
-      const alertBox = form.querySelector('[data-login-error]');
-      if (alertBox) {
-        alertBox.hidden = false;
-        alertBox.textContent = 'Неверный e-mail или пароль.';
+      if (!isValidEmail(email.value.trim())) {
+        setFieldError(email, 'Введите корректный e-mail.');
+        isValid = false;
+      } else {
+        setFieldValid(email);
       }
-      return;
-    }
 
-    setSessionUserId(account.id);
-    window.location.href = url('pages/profile.html');
+      if (!password.value) {
+        setFieldError(password, 'Введите пароль.');
+        isValid = false;
+      } else {
+        setFieldValid(password);
+      }
+
+      if (!isValid) return;
+
+      const value = email.value.trim();
+
+      // Демонстрационный аккаунт доступен всегда.
+      if (value === 'demo@recipehub.ru' && password.value === 'demo1234') {
+        setSessionUserId('demo');
+        window.location.href = url('pages/profile.html');
+        return;
+      }
+
+      const account = getAllUsers().find(
+        (user) => user.email.toLowerCase() === value.toLowerCase(),
+      );
+
+      if (!account || account.password !== password.value) {
+        const alertBox = form.querySelector('[data-login-error]');
+        if (alertBox) {
+          alertBox.hidden = false;
+          alertBox.textContent = 'Неверный e-mail или пароль.';
+        }
+        return;
+      }
+
+      setSessionUserId(account.id);
+      window.location.href = url('pages/profile.html');
     });
   });
 }
@@ -114,75 +109,78 @@ function initRegisterForm() {
     form.dataset.registerBound = 'true';
 
     form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    resetValidation(form);
+      event.preventDefault();
+      resetValidation(form);
 
-    const name = form.elements.name;
-    const email = form.elements.email;
-    const password = form.elements.password;
-    const confirm = form.elements.confirm;
-    const terms = form.elements.terms;
-    let isValid = true;
+      const name = form.elements.name;
+      const email = form.elements.email;
+      const password = form.elements.password;
+      const confirm = form.elements.confirm;
+      const terms = form.elements.terms;
+      let isValid = true;
 
-    if (name.value.trim().length < 2) {
-      setFieldError(name, 'Укажите имя (минимум 2 символа).');
-      isValid = false;
-    } else {
-      setFieldValid(name);
-    }
+      if (name.value.trim().length < 2) {
+        setFieldError(name, 'Укажите имя (минимум 2 символа).');
+        isValid = false;
+      } else {
+        setFieldValid(name);
+      }
 
-    if (!isValidEmail(email.value.trim())) {
-      setFieldError(email, 'Введите корректный e-mail.');
-      isValid = false;
-    } else if (emailExists(email.value.trim())) {
-      setFieldError(email, 'Пользователь с таким e-mail уже существует.');
-      isValid = false;
-    } else {
-      setFieldValid(email);
-    }
+      if (!isValidEmail(email.value.trim())) {
+        setFieldError(email, 'Введите корректный e-mail.');
+        isValid = false;
+      } else if (emailExists(email.value.trim())) {
+        setFieldError(email, 'Пользователь с таким e-mail уже существует.');
+        isValid = false;
+      } else {
+        setFieldValid(email);
+      }
 
-    if (password.value.length < 8) {
-      setFieldError(password, 'Пароль должен содержать минимум 8 символов.');
-      isValid = false;
-    } else {
-      setFieldValid(password);
-    }
+      if (password.value.length < 8) {
+        setFieldError(password, 'Пароль должен содержать минимум 8 символов.');
+        isValid = false;
+      } else {
+        setFieldValid(password);
+      }
 
-    if (confirm.value !== password.value || !confirm.value) {
-      setFieldError(confirm, 'Пароли не совпадают.');
-      isValid = false;
-    } else {
-      setFieldValid(confirm);
-    }
+      if (!confirm.value || confirm.value !== password.value) {
+        setFieldError(confirm, 'Пароли не совпадают.');
+        isValid = false;
+      } else {
+        setFieldValid(confirm);
+      }
 
-    if (terms && !terms.checked) {
-      terms.classList.add('is-invalid');
-      isValid = false;
-    } else if (terms) {
-      terms.classList.remove('is-invalid');
-    }
+      if (terms && !terms.checked) {
+        terms.classList.add('is-invalid');
+        isValid = false;
+      } else if (terms) {
+        terms.classList.remove('is-invalid');
+      }
 
-    if (!isValid) return;
+      if (!isValid) return;
 
-    const newUser = {
-      id: `local-${Date.now()}`,
-      name: name.value.trim(),
-      email: email.value.trim(),
-      password: password.value,
-      bio: '',
-      subscribers: 0,
-    };
+      const newUser = {
+        id: `local-${Date.now()}`,
+        name: name.value.trim(),
+        email: email.value.trim(),
+        password: password.value,
+        bio: '',
+        subscribers: 0,
+      };
 
-    addLocalUser(newUser);
-    setSessionUserId(newUser.id);
-    window.location.href = url('pages/profile.html');
+      addLocalUser(newUser);
+      setSessionUserId(newUser.id);
+      window.location.href = url('pages/profile.html');
     });
   });
 }
 
-/* ------------------------ Страница профиля ------------------------ */
+/* ------------------------ Защита страницы ------------------------- */
 
-/** Показать предупреждение, если пользователь не авторизован. */
+/**
+ * На странице профиля показать предупреждение и скрыть содержимое,
+ * если пользователь не авторизован. Сами данные профиля рендерит profile.js.
+ */
 function guardProfilePage() {
   const container = document.querySelector('[data-profile-page]');
   if (!container) return;
