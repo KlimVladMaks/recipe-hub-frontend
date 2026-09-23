@@ -1,0 +1,31 @@
+/* ==========================================================================
+   CSS-переменные проекта RecipeHub.
+
+   Здесь собраны все цвета, отступы и радиусы, которые могут меняться.
+   Сейчас используется единственная светлая тема. Наличие переменных
+   заранее упростит добавление тёмной/кастомной темы в следующих работах.
+   ========================================================================== */
+
+:root {
+  /* Фирменные цвета (минималистичная палитра на базе Bootstrap) */
+  --rh-color-primary: #b4552d;
+  --rh-color-primary-hover: #96441f;
+  --rh-color-accent: #4f6d3f;
+  --rh-color-surface: #ffffff;
+  --rh-color-background: #f8f9fa;
+  --rh-color-border: #dee2e6;
+  --rh-color-text: #212529;
+  --rh-color-text-muted: #6c757d;
+
+  /* Типографика */
+  --rh-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+
+  /* Скругления и тени */
+  --rh-radius: 0.5rem;
+  --rh-radius-sm: 0.375rem;
+  --rh-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+
+  /* Единая высота изображения-обложки карточки рецепта */
+  --rh-card-image-height: 12rem;
+}

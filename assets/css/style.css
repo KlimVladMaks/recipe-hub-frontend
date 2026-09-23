@@ -1,0 +1,88 @@
+/* ==========================================================================
+   Кастомные стили RecipeHub.
+
+   Принцип: по возможности использовать штатные классы Bootstrap 5.
+   Здесь описан только тот минимум, который Bootstrap не закрывает:
+   фирменный акцент, обложки карточек и мелкие утилиты.
+   ========================================================================== */
+
+body {
+  font-family: var(--rh-font-family);
+  background-color: var(--rh-color-background);
+  color: var(--rh-color-text);
+}
+
+/* Утилита: убрать подчёркивание у ссылок-обёрток карточек */
+.rh-link-reset,
+.rh-link-reset:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Обложка карточки рецепта: одинаковая высота и аккуратный crop */
+.rh-card-image {
+  width: 100%;
+  height: var(--rh-card-image-height);
+  object-fit: cover;
+  background-color: var(--rh-color-border);
+}
+
+/* Кнопка с фирменным цветом поверх стандартных размеров Bootstrap */
+.btn-rh-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--rh-color-primary);
+  --bs-btn-border-color: var(--rh-color-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--rh-color-primary-hover);
+  --bs-btn-hover-border-color: var(--rh-color-primary-hover);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--rh-color-primary-hover);
+  --bs-btn-active-border-color: var(--rh-color-primary-hover);
+}
+
+/* Иконки из SVG-спрайта */
+.rh-icon {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  vertical-align: -0.125em;
+}
+
+/* Область шагов приготовления */
+.rh-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  border-radius: 50%;
+  background-color: var(--rh-color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Заглушка изображения (когда картинки нет) */
+.rh-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--rh-color-border);
+  color: var(--rh-color-text-muted);
+}
+
+/* Кнопки-иконки для лайков и подписок */
+.rh-action-btn.is-active {
+  color: var(--rh-color-primary);
+  border-color: var(--rh-color-primary);
+}
+
+/* Комментарии */
+.rh-comment:not(:last-child) {
+  border-bottom: 1px solid var(--rh-color-border);
+}
+
+/* Небольшой отступ под фиксированный футер */
+.rh-page {
+  min-height: 60vh;
+}
