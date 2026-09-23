@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вход — RecipeHub</title>
+  <link rel="stylesheet" href="../assets/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body data-root="..">
+
+  <header>
+    <nav class="navbar navbar-expand-lg bg-white border-bottom" aria-label="Основная навигация">
+      <div class="container">
+        <a class="navbar-brand fw-semibold" href="../index.html">RecipeHub</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+          data-bs-target="#mainNav" aria-controls="mainNav"
+          aria-expanded="false" aria-label="Переключить навигацию">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="../index.html" data-nav-link>Главная</a></li>
+            <li class="nav-item"><a class="nav-link" href="search.html" data-nav-link>Поиск рецептов</a></li>
+            <li class="nav-item" data-auth-user hidden>
+              <a class="nav-link" href="profile.html" data-nav-link>Личный кабинет</a>
+            </li>
+          </ul>
+          <div class="d-flex gap-2" data-auth-guest>
+            <a class="btn btn-outline-secondary" href="login.html">Вход</a>
+            <a class="btn btn-rh-primary" href="register.html">Регистрация</a>
+          </div>
+          <div class="dropdown" data-auth-user hidden>
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              <svg class="rh-icon me-1" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-user"></use></svg>
+              <span data-auth-username>Пользователь</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="profile.html">Личный кабинет</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item" type="button" data-logout>Выйти</button></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="rh-page py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
+          <div class="card shadow-sm">
+            <div class="card-body p-4">
+              <h1 class="h3 mb-1">Вход в аккаунт</h1>
+              <p class="text-muted">Войдите, чтобы публиковать рецепты и сохранять чужие.</p>
+
+              <div class="alert alert-danger" role="alert" data-login-error hidden></div>
+
+              <form data-login-form novalidate>
+                <div class="mb-3">
+                  <label class="form-label" for="login-email">E-mail</label>
+                  <input class="form-control" type="email" id="login-email" name="email"
+                    autocomplete="email" required>
+                  <div class="invalid-feedback">Введите корректный e-mail.</div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label" for="login-password">Пароль</label>
+                  <input class="form-control" type="password" id="login-password" name="password"
+                    autocomplete="current-password" required>
+                  <div class="invalid-feedback">Введите пароль.</div>
+                </div>
+
+                <div class="mb-3 form-check">
+                  <input class="form-check-input" type="checkbox" id="login-remember" name="remember">
+                  <label class="form-check-label" for="login-remember">Запомнить меня</label>
+                </div>
+
+                <button class="btn btn-rh-primary w-100" type="submit">Войти</button>
+              </form>
+
+              <hr class="my-4">
+
+              <p class="text-muted small mb-2">
+                Демо-доступ: <code>demo@recipehub.ru</code> / <code>demo1234</code>
+              </p>
+              <p class="mb-0">
+                Нет аккаунта? <a href="register.html">Зарегистрируйтесь</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-white border-top py-4 mt-auto">
+    <div class="container">
+      <div class="row gy-3">
+        <div class="col-md-6">
+          <p class="fw-semibold mb-1">RecipeHub</p>
+          <p class="text-muted small mb-0">Учебный проект по фронтенд-разработке, ИТМО.</p>
+        </div>
+        <div class="col-md-6">
+          <ul class="list-unstyled d-flex flex-wrap gap-3 mb-0 justify-content-md-end">
+            <li><a href="../index.html">Главная</a></li>
+            <li><a href="search.html">Поиск</a></li>
+            <li><a href="register.html">Регистрация</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/main.js"></script>
+  <script type="module" src="../assets/js/auth.js"></script>
+  <script src="../assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>
