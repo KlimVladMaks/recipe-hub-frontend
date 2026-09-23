@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Рецепт — RecipeHub</title>
+  <link rel="stylesheet" href="../assets/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body data-root="..">
+
+  <header>
+    <nav class="navbar navbar-expand-lg bg-white border-bottom" aria-label="Основная навигация">
+      <div class="container">
+        <a class="navbar-brand fw-semibold" href="../index.html">RecipeHub</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+          data-bs-target="#mainNav" aria-controls="mainNav"
+          aria-expanded="false" aria-label="Переключить навигацию">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="../index.html" data-nav-link>Главная</a></li>
+            <li class="nav-item"><a class="nav-link" href="search.html" data-nav-link>Поиск рецептов</a></li>
+            <li class="nav-item" data-auth-user hidden>
+              <a class="nav-link" href="profile.html" data-nav-link>Личный кабинет</a>
+            </li>
+          </ul>
+          <div class="d-flex gap-2" data-auth-guest>
+            <a class="btn btn-outline-secondary" href="login.html">Вход</a>
+            <a class="btn btn-rh-primary" href="register.html">Регистрация</a>
+          </div>
+          <div class="dropdown" data-auth-user hidden>
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              <svg class="rh-icon me-1" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-user"></use></svg>
+              <span data-auth-username>Пользователь</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="profile.html">Личный кабинет</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item" type="button" data-logout>Выйти</button></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="rh-page py-4 py-lg-5">
+    <div class="container">
+      <!-- Если рецепт не найден по id -->
+      <div class="alert alert-warning" role="alert" data-recipe-not-found hidden>
+        Рецепт не найден. <a href="search.html">Вернуться к поиску</a>.
+      </div>
+
+      <article data-recipe-view hidden>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="../index.html">Главная</a></li>
+            <li class="breadcrumb-item"><a href="search.html">Поиск</a></li>
+            <li class="breadcrumb-item active" aria-current="page" data-recipe-title-crumb>Рецепт</li>
+          </ol>
+        </nav>
+
+        <div class="row g-4">
+          <!-- Основная колонка -->
+          <div class="col-12 col-lg-8">
+            <img src="" alt="" class="img-fluid rounded border w-100 rh-card-image mb-4" data-recipe-image>
+
+            <h1 class="h2 mb-2" data-recipe-title>Рецепт</h1>
+
+            <div class="d-flex flex-wrap gap-3 text-muted mb-3">
+              <span class="d-inline-flex align-items-center gap-1">
+                <svg class="rh-icon" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-clock"></use></svg>
+                <span data-recipe-time></span>
+              </span>
+              <span data-recipe-difficulty></span>
+              <span data-recipe-servings></span>
+              <span class="badge text-bg-light border" data-recipe-dish></span>
+            </div>
+
+            <p class="lead" data-recipe-description></p>
+
+            <!-- Кнопки действий -->
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <button class="btn btn-outline-secondary rh-action-btn" type="button"
+                data-like-recipe aria-pressed="false">
+                <svg class="rh-icon me-1" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-heart"></use></svg>
+                <span data-label>Нравится</span>
+                (<span data-count>0</span>)
+              </button>
+              <button class="btn btn-outline-secondary rh-action-btn" type="button"
+                data-bookmark-recipe aria-pressed="false">
+                <svg class="rh-icon me-1" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-bookmark"></use></svg>
+                <span data-label>Сохранить</span>
+              </button>
+              <button class="btn btn-outline-secondary" type="button"
+                data-bs-toggle="modal" data-bs-target="#shareModal">
+                Поделиться
+              </button>
+            </div>
+
+            <!-- Ингредиенты -->
+            <section class="card card-body shadow-sm mb-4" aria-labelledby="ingredients-heading">
+              <h2 class="h5" id="ingredients-heading">Ингредиенты</h2>
+              <ul class="mb-0" data-recipe-ingredients></ul>
+            </section>
+
+            <!-- Шаги приготовления -->
+            <section class="card card-body shadow-sm mb-4" aria-labelledby="steps-heading">
+              <h2 class="h5" id="steps-heading">Пошаговое приготовление</h2>
+              <ol class="list-unstyled mb-0" data-recipe-steps></ol>
+            </section>
+
+            <!-- Видео -->
+            <section class="card card-body shadow-sm mb-4" aria-labelledby="video-heading" data-recipe-video-block hidden>
+              <h2 class="h5" id="video-heading">Видео приготовления</h2>
+              <div class="ratio ratio-16x9">
+                <iframe src="" title="Видео приготовления рецепта" frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen data-recipe-video></iframe>
+              </div>
+            </section>
+
+            <!-- Комментарии -->
+            <section class="card card-body shadow-sm" aria-labelledby="comments-heading">
+              <h2 class="h5" id="comments-heading">
+                Комментарии (<span data-comments-count>0</span>)
+              </h2>
+              <ul class="list-unstyled mb-3" data-comments-list></ul>
+
+              <form data-comment-form novalidate>
+                <div class="mb-3">
+                  <label class="form-label" for="comment-text">Оставить комментарий</label>
+                  <textarea class="form-control" id="comment-text" name="text" rows="3"
+                    placeholder="Поделитесь впечатлением о рецепте"></textarea>
+                </div>
+                <button class="btn btn-rh-primary" type="submit">Отправить</button>
+              </form>
+            </section>
+          </div>
+
+          <!-- Боковая колонка: автор -->
+          <aside class="col-12 col-lg-4">
+            <div class="card shadow-sm sticky-lg-top" style="top: 1rem;">
+              <div class="card-body text-center">
+                <div class="rh-placeholder rounded-circle mx-auto mb-3" style="width:4rem;height:4rem;">
+                  <svg class="rh-icon fs-3" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-user"></use></svg>
+                </div>
+                <h2 class="h6 mb-1" data-author-name>Автор</h2>
+                <p class="text-muted small" data-author-bio></p>
+                <button class="btn btn-sm btn-outline-secondary w-100" type="button"
+                  data-subscribe-author aria-pressed="false">
+                  Подписаться
+                </button>
+              </div>
+              <div class="card-footer bg-white">
+                <a class="btn btn-outline-secondary btn-sm w-100" href="search.html">Другие рецепты</a>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <!-- Модалка «Поделиться» -->
+  <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="shareModalLabel">Поделиться рецептом</h2>
+          <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label" for="share-link">Ссылка на рецепт</label>
+          <input class="form-control" type="text" id="share-link" readonly data-share-link>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Закрыть</button>
+          <button class="btn btn-rh-primary" type="button" data-copy-link>Скопировать ссылку</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-white border-top py-4 mt-auto">
+    <div class="container">
+      <div class="row gy-3">
+        <div class="col-md-6">
+          <p class="fw-semibold mb-1">RecipeHub</p>
+          <p class="text-muted small mb-0">Учебный проект по фронтенд-разработке, ИТМО.</p>
+        </div>
+        <div class="col-md-6">
+          <ul class="list-unstyled d-flex flex-wrap gap-3 mb-0 justify-content-md-end">
+            <li><a href="../index.html">Главная</a></li>
+            <li><a href="search.html">Поиск</a></li>
+            <li><a href="login.html">Вход</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/main.js"></script>
+  <script type="module" src="../assets/js/recipe.js"></script>
+  <script type="module" src="../assets/js/social.js"></script>
+  <script src="../assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>
