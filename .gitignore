@@ -17,3 +17,6 @@ desktop.ini
 npm-debug.log*
 .cache/
 dist/
+
+# Папка с задачами
+tasks/
