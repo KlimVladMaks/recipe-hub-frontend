@@ -147,13 +147,10 @@ recipe-hub-frontend/
 │   │   ├── sprite.svg          # SVG-спрайт из 15 иконок
 │   │   └── recipe-placeholder.svg  # заглушка фото рецепта
 │   └── vendor/bootstrap/       # Bootstrap 5.3.8 (CSS + bundle JS)
-├── ai_exchange/                # папка для обмена информацией с ИИ (в .gitignore)
 ├── README.md
 ├── AGENTS.md
 └── .gitignore
 ```
-
-Общий объём собственного кода (без Bootstrap) — около **2800 строк**, из них JS — примерно 1400 строк.
 
 ---
 
