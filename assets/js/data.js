@@ -104,7 +104,7 @@ export const recipes = [
     ],
     image: 'assets/img/recipe-placeholder.svg',
     likes: 87,
-    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    videoUrl: 'https://rutube.ru/play/embed/9289f2d7c9c4d8a9738737199e096dd6/',
     createdAt: '2026-09-05',
   },
   {
@@ -146,7 +146,7 @@ export const recipes = [
     ],
     image: 'assets/img/recipe-placeholder.svg',
     likes: 219,
-    videoUrl: '',
+    videoUrl: 'https://rutube.ru/play/embed/e8bd8c583519ddd6a75595f5532edc3c/',
     createdAt: '2026-09-09',
   },
   {
@@ -188,7 +188,7 @@ export const recipes = [
     ],
     image: 'assets/img/recipe-placeholder.svg',
     likes: 133,
-    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    videoUrl: 'https://rutube.ru/play/embed/fccbb9a1d88c7fe1c7da0906cf6b75a2/',
     createdAt: '2026-09-13',
   },
   {
@@ -230,7 +230,7 @@ export const recipes = [
     ],
     image: 'assets/img/recipe-placeholder.svg',
     likes: 95,
-    videoUrl: '',
+    videoUrl: 'https://rutube.ru/play/embed/6b3f6dcfd23a3d33c80f0e0b6efc8f2d/',
     createdAt: '2026-09-15',
   },
 ];
