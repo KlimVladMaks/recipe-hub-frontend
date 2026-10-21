@@ -17,6 +17,3 @@ desktop.ini
 npm-debug.log*
 .cache/
 dist/
-
-# Папка для обмена информацией с ИИ
-ai_exchange/
