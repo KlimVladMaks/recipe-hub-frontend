@@ -1,23 +1,19 @@
 /**
  * profile.js — личный кабинет пользователя.
  *
- * Отображает данные профиля, коллекции рецептов (публикации, сохранённые,
- * подписки), а также обрабатывает модальные формы: создание рецепта и
- * редактирование профиля.
+ * Данные профиля, публикации, сохранённые рецепты и подписки загружаются
+ * из API. Создание рецепта и редактирование профиля также идут через API.
  */
 
+import * as api from './api.js';
+import * as store from './store.js';
 import {
-  getBookmarks,
-  getSubscriptions,
-  addLocalRecipe,
-  saveProfileOverride,
-} from './storage.js';
-import {
+  appReady,
   escapeHtml,
   getCurrentUser,
-  getAllRecipes,
-  getAllUsers,
   closeModal,
+  setLoading,
+  showApiError,
 } from './main.js';
 import { fillFilterOptions, renderCollection } from './recipes.js';
 
@@ -31,7 +27,6 @@ function renderProfileHeader(user) {
   container.querySelector('[data-profile-bio]').textContent =
     user.bio || 'Расскажите о себе в настройках профиля.';
 
-  // Предзаполнить форму редактирования.
   const form = document.querySelector('[data-edit-profile-form]');
   if (form) {
     form.elements.name.value = user.name;
@@ -40,69 +35,104 @@ function renderProfileHeader(user) {
 }
 
 /** Отобразить публикации пользователя. */
-function renderPublished(user) {
+async function renderPublished(user) {
   const container = document.querySelector('[data-profile-published]');
   if (!container) return;
 
-  const mine = getAllRecipes().filter(
-    (recipe) => String(recipe.authorId) === String(user.id),
-  );
-  renderCollection(container, mine);
+  setLoading(container, true);
+  try {
+    const list = await api.recipes.list({
+      userId: user.id,
+      _sort: 'createdAt',
+      _order: 'desc',
+    });
+    list.forEach(store.upsertRecipe);
+    renderCollection(container, list);
+  } catch (error) {
+    showApiError(error, container);
+  } finally {
+    setLoading(container, false);
+  }
 }
 
 /** Отобразить сохранённые рецепты. */
-function renderSaved() {
+async function renderSaved(user) {
   const container = document.querySelector('[data-profile-saved]');
   if (!container) return;
 
-  const bookmarks = getBookmarks();
-  const list = getAllRecipes().filter((recipe) => bookmarks.includes(recipe.id));
-  renderCollection(container, list);
+  setLoading(container, true);
+  try {
+    const bookmarks = await api.bookmarks.listByUser(user.id);
+    const ids = bookmarks.map((bookmark) => String(bookmark.recipeId));
+
+    const list = store
+      .getAllRecipes()
+      .filter((recipe) => ids.includes(String(recipe.id)));
+
+    renderCollection(container, list);
+  } catch (error) {
+    showApiError(error, container);
+  } finally {
+    setLoading(container, false);
+  }
 }
 
 /** Отобразить подписки на кулинаров. */
-function renderSubscriptions() {
+async function renderSubscriptions(user) {
   const container = document.querySelector('[data-profile-subscriptions]');
   if (!container) return;
 
-  const subscriptions = getSubscriptions();
-  const authors = getAllUsers().filter((user) => subscriptions.includes(user.id));
+  setLoading(container, true);
+  try {
+    const subscriptions = await api.subscriptions.listByUser(user.id);
+    const authorIds = subscriptions.map((item) => String(item.authorId));
 
-  if (!authors.length) {
-    container.innerHTML = `
-      <div class="col-12">
-        <div class="alert alert-light border text-center mb-0" role="status">
-          Вы пока ни на кого не подписаны. Найдите кулинаров на
-          <a href="search.html">странице поиска</a>.
-        </div>
-      </div>
-    `;
-    return;
-  }
+    const authors = store
+      .getAllUsers()
+      .filter((author) => authorIds.includes(String(author.id)));
 
-  container.innerHTML = authors
-    .map(
-      (author) => `
-        <div class="col">
-          <div class="card h-100">
-            <div class="card-body">
-              <h2 class="h6 mb-1">${escapeHtml(author.name)}</h2>
-              <p class="text-muted small mb-0">${escapeHtml(author.bio || '')}</p>
-            </div>
+    if (!authors.length) {
+      container.innerHTML = `
+        <div class="col-12">
+          <div class="alert alert-light border text-center mb-0" role="status">
+            Вы пока ни на кого не подписаны. Найдите кулинаров на
+            <a href="search.html">странице поиска</a>.
           </div>
         </div>
-      `,
-    )
-    .join('');
+      `;
+      return;
+    }
+
+    container.innerHTML = authors
+      .map(
+        (author) => `
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <h2 class="h6 mb-1">${escapeHtml(author.name)}</h2>
+                <p class="text-muted small mb-0">${escapeHtml(author.bio || '')}</p>
+              </div>
+            </div>
+          </div>
+        `,
+      )
+      .join('');
+  } catch (error) {
+    showApiError(error, container);
+  } finally {
+    setLoading(container, false);
+  }
 }
+
 
 /* ------------------------- Модальные формы ------------------------ */
 
+/** Создание нового рецепта. */
 function initNewRecipeForm(user) {
   const form = document.querySelector('[data-new-recipe-form]');
   if (!form) return;
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const title = form.elements.title;
@@ -118,9 +148,8 @@ function initNewRecipeForm(user) {
       .filter(Boolean);
 
     const recipe = {
-      id: `local-${Date.now()}`,
+      userId: user.id,
       title: title.value.trim(),
-      authorId: user.id,
       dishType: form.elements.dishType.value || 'Основные блюда',
       difficulty: form.elements.difficulty.value || 'Низкая',
       timeMinutes: Number(form.elements.timeMinutes.value) || 30,
@@ -137,18 +166,29 @@ function initNewRecipeForm(user) {
       createdAt: new Date().toISOString(),
     };
 
-    addLocalRecipe(recipe);
-    form.reset();
-    closeModal('newRecipeModal');
-    renderPublished(user);
+    const button = form.querySelector('[type="submit"]');
+    if (button) button.disabled = true;
+
+    try {
+      const created = await api.recipes.create(recipe);
+      store.upsertRecipe(created);
+      form.reset();
+      closeModal('newRecipeModal');
+      await renderPublished(user);
+    } catch (error) {
+      showApiError(error);
+    } finally {
+      if (button) button.disabled = false;
+    }
   });
 }
 
+/** Редактирование имени и описания профиля. */
 function initEditProfileForm(user) {
   const form = document.querySelector('[data-edit-profile-form]');
   if (!form) return;
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const name = form.elements.name;
@@ -162,23 +202,34 @@ function initEditProfileForm(user) {
       name: name.value.trim(),
       bio: form.elements.bio.value.trim(),
     };
-    saveProfileOverride(user.id, changes);
-    closeModal('editProfileModal');
 
-    // Обновить данные на странице без перезагрузки.
-    const updated = { ...user, ...changes };
-    renderProfileHeader(updated);
-    document.querySelectorAll('[data-auth-username]').forEach((el) => {
-      el.textContent = updated.name;
-    });
+    const button = form.querySelector('[type="submit"]');
+    if (button) button.disabled = true;
+
+    try {
+      const updated = await api.users.update(user.id, changes);
+      store.updateUser(updated);
+      closeModal('editProfileModal');
+
+      renderProfileHeader(updated);
+      document.querySelectorAll('[data-auth-username]').forEach((element) => {
+        element.textContent = updated.name;
+      });
+    } catch (error) {
+      showApiError(error);
+    } finally {
+      if (button) button.disabled = false;
+    }
   });
 }
 
 /* --------------------------- Инициализация ------------------------ */
 
-function init() {
+async function init() {
   const page = document.querySelector('[data-profile-page]');
   if (!page) return; // не страница профиля
+
+  await appReady;
 
   const user = getCurrentUser();
   if (!user) return; // предупреждение покажет auth.js
@@ -186,12 +237,16 @@ function init() {
   page.hidden = false;
   fillFilterOptions();
   renderProfileHeader(user);
-  renderPublished(user);
-  renderSaved();
-  renderSubscriptions();
+
+  await Promise.all([
+    renderPublished(user),
+    renderSaved(user),
+    renderSubscriptions(user),
+  ]);
 
   initNewRecipeForm(user);
   initEditProfileForm(user);
 }
 
 document.addEventListener('DOMContentLoaded', init);
+

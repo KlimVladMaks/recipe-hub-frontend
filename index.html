@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RecipeHub — сервис обмена рецептами</title>
   <meta name="description" content="RecipeHub — публикуйте рецепты, находите новые блюда и подписывайтесь на кулинаров.">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
   <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/style.css">
@@ -113,47 +114,10 @@
     <section class="py-5 bg-white border-top">
       <div class="container">
         <h2 class="h3 mb-4">Популярные кулинары</h2>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-          <div class="col">
-            <div class="card h-100">
-              <div class="card-body">
-                <h3 class="h6 mb-1">Мария Кузнецова</h3>
-                <p class="text-muted small mb-2">Вегетарианская кухня и сезонные продукты.</p>
-                <span class="badge text-bg-light border">203 подписчика</span>
-              </div>
-              <div class="card-footer bg-white border-top-0">
-                <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-subscribe-author="3">
-                  Подписаться
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="col">
-            <div class="card h-100">
-              <div class="card-body">
-                <h3 class="h6 mb-1">Анна Петрова</h3>
-                <p class="text-muted small mb-2">Люблю домашнюю выпечку и десерты без лишнего сахара.</p>
-                <span class="badge text-bg-light border">128 подписчиков</span>
-              </div>
-              <div class="card-footer bg-white border-top-0">
-                <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-subscribe-author="1">
-                  Подписаться
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="col">
-            <div class="card h-100">
-              <div class="card-body">
-                <h3 class="h6 mb-1">Игорь Смирнов</h3>
-                <p class="text-muted small mb-2">Готовлю простые сытные блюда на каждый день.</p>
-                <span class="badge text-bg-light border">74 подписчика</span>
-              </div>
-              <div class="card-footer bg-white border-top-0">
-                <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-subscribe-author="2">
-                  Подписаться
-                </button>
-              </div>
+        <div class="row row-cols-1 row-cols-md-3 g-4" data-popular-authors>
+          <div class="col-12">
+            <div class="alert alert-light border text-center mb-0" role="status">
+              Загрузка кулинаров…
             </div>
           </div>
         </div>

@@ -1,28 +1,28 @@
 /**
- * recipes.js — рендер карточек рецептов и фильтрация.
+ * recipes.js — рендер карточек рецептов, главная страница и поиск.
  *
- * Используется на главной, в поиске и в личном кабинете. Все пути к
- * изображениям и ссылкам строятся от корня проекта (url()).
+ * Данные приходят из API. Фильтрация выполняется на стороне json-server
+ * через query-параметры, с debounce и отменой устаревших запросов.
  */
 
+import { DISH_TYPES, DIFFICULTIES } from './constants.js';
+import * as api from './api.js';
+import * as store from './store.js';
 import {
-  DISH_TYPES,
-  DIFFICULTIES,
-} from './data.js';
-import { getBookmarks, getLikes } from './storage.js';
-import {
+  appReady,
   escapeHtml,
   url,
   formatDuration,
   getUserName,
-  getAllRecipes,
+  setLoading,
+  showApiError,
 } from './main.js';
 
 /** Разметка одной карточки рецепта. */
 export function recipeCardTemplate(recipe) {
-  const authorName = getUserName(recipe.authorId);
-  const liked = getLikes().includes(recipe.id);
-  const bookmarked = getBookmarks().includes(recipe.id);
+  const authorName = getUserName(recipe.userId);
+  const liked = store.isLiked(recipe.id);
+  const bookmarked = store.isBookmarked(recipe.id);
   const likesCount = recipe.likes + (liked ? 1 : 0);
 
   return `
@@ -58,6 +58,7 @@ export function recipeCardTemplate(recipe) {
 /** Отрисовать список рецептов в контейнер. */
 export function renderRecipes(container, list) {
   if (!container) return;
+
   if (!list.length) {
     container.innerHTML = `
       <div class="col-12">
@@ -68,6 +69,7 @@ export function renderRecipes(container, list) {
     `;
     return;
   }
+
   container.innerHTML = list.map(recipeCardTemplate).join('');
 }
 
@@ -92,53 +94,18 @@ export function fillFilterOptions() {
   });
 }
 
-/**
- * Отфильтровать рецепты.
- *
- * @param {{query?: string, dishType?: string, difficulty?: string,
- *          ingredient?: string, maxTime?: number, sort?: string}} filters
- */
-export function filterRecipes(filters = {}) {
-  const query = (filters.query || '').trim().toLowerCase();
-  const ingredient = (filters.ingredient || '').trim().toLowerCase();
-
-  let result = getAllRecipes().filter((recipe) => {
-    if (filters.dishType && recipe.dishType !== filters.dishType) return false;
-    if (filters.difficulty && recipe.difficulty !== filters.difficulty) return false;
-    if (filters.maxTime && recipe.timeMinutes > Number(filters.maxTime)) return false;
-
-    if (query) {
-      const haystack = `${recipe.title} ${recipe.description}`.toLowerCase();
-      if (!haystack.includes(query)) return false;
-    }
-
-    if (ingredient) {
-      const hasIngredient = recipe.ingredients.some((item) =>
-        item.toLowerCase().includes(ingredient),
-      );
-      if (!hasIngredient) return false;
-    }
-
-    return true;
-  });
-
-  switch (filters.sort) {
+/** Параметры сортировки json-server. */
+function sortParams(sort) {
+  switch (sort) {
     case 'likes':
-      result = result.sort((a, b) => b.likes - a.likes);
-      break;
+      return { _sort: 'likes', _order: 'desc' };
     case 'time-asc':
-      result = result.sort((a, b) => a.timeMinutes - b.timeMinutes);
-      break;
+      return { _sort: 'timeMinutes', _order: 'asc' };
     case 'time-desc':
-      result = result.sort((a, b) => b.timeMinutes - a.timeMinutes);
-      break;
+      return { _sort: 'timeMinutes', _order: 'desc' };
     default:
-      result = result.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-      );
+      return { _sort: 'createdAt', _order: 'desc' };
   }
-
-  return result;
 }
 
 /* --------------------------- Главная ---------------------------- */
@@ -147,11 +114,23 @@ function initHomePage() {
   const container = document.querySelector('[data-recipes-list]');
   if (!container) return;
 
-  const limit = Number(container.dataset.recipesList) || getAllRecipes().length;
-  const popular = [...getAllRecipes()]
-    .sort((a, b) => b.likes - a.likes)
-    .slice(0, limit);
-  renderRecipes(container, popular);
+  const limit = Number(container.dataset.recipesList) || 6;
+
+  appReady.then(async () => {
+    setLoading(container, true);
+    try {
+      const list = await api.recipes.list({
+        _sort: 'likes',
+        _order: 'desc',
+        _limit: limit,
+      });
+      renderRecipes(container, list);
+    } catch (error) {
+      showApiError(error, container);
+    } finally {
+      setLoading(container, false);
+    }
+  });
 }
 
 /* ---------------------------- Поиск ----------------------------- */
@@ -162,51 +141,81 @@ function initSearchPage() {
 
   const results = document.querySelector('[data-search-results]');
   const counter = document.querySelector('[data-search-counter]');
-  fillFilterOptions();
 
-  // Подставить запрос из адреса (переход с главной страницы: search.html?query=...).
-  const initialQuery = new URLSearchParams(window.location.search).get('query');
-  if (initialQuery && form.elements.query) {
-    form.elements.query.value = initialQuery;
-  }
+  let controller = null;
+  let timer = null;
 
-  const applyFilters = () => {
-    const filters = {
-      query: form.elements.query?.value,
+  const applyFilters = async () => {
+    const params = {
+      q: form.elements.query?.value?.trim(),
       dishType: form.elements.dishType?.value,
       difficulty: form.elements.difficulty?.value,
-      ingredient: form.elements.ingredient?.value,
-      maxTime: form.elements.maxTime?.value,
-      sort: form.elements.sort?.value,
+      timeMinutes_lte: form.elements.maxTime?.value,
+      ingredients_like: form.elements.ingredient?.value?.trim(),
+      ...sortParams(form.elements.sort?.value),
     };
-    const list = filterRecipes(filters);
-    renderRecipes(results, list);
-    if (counter) {
-      counter.textContent = `Найдено рецептов: ${list.length}`;
+
+    if (controller) controller.abort();
+    const current = new AbortController();
+    controller = current;
+
+    setLoading(results, true);
+    if (counter) counter.textContent = 'Загрузка…';
+
+    try {
+      const list = await api.recipes.list(params, {
+        signal: current.signal,
+      });
+      renderRecipes(results, list);
+      if (counter) counter.textContent = `Найдено рецептов: ${list.length}`;
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      showApiError(error, results);
+      if (counter) counter.textContent = 'Не удалось загрузить рецепты';
+    } finally {
+      if (controller === current) {
+        setLoading(results, false);
+      }
     }
+  };
+
+  const schedule = () => {
+    clearTimeout(timer);
+    timer = setTimeout(applyFilters, 300);
   };
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    clearTimeout(timer);
     applyFilters();
   });
 
-  // Живая фильтрация при изменении любых полей формы (включая связанные
-  // через атрибут form, например select сортировки).
   Array.from(form.elements).forEach((control) => {
-    control.addEventListener('input', applyFilters);
-    control.addEventListener('change', applyFilters);
+    control.addEventListener('input', schedule);
+    control.addEventListener('change', schedule);
   });
 
   const resetButton = form.querySelector('[data-search-reset]');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
       form.reset();
+      clearTimeout(timer);
       applyFilters();
     });
   }
 
-  applyFilters();
+  appReady.then(() => {
+    fillFilterOptions();
+
+    const initialQuery = new URLSearchParams(window.location.search).get(
+      'query',
+    );
+    if (initialQuery && form.elements.query) {
+      form.elements.query.value = initialQuery;
+    }
+
+    applyFilters();
+  });
 }
 
 /* ------------------------ Личный кабинет ------------------------- */
@@ -225,3 +234,4 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
