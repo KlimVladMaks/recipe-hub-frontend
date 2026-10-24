@@ -18,8 +18,5 @@ npm-debug.log*
 .cache/
 dist/
 
-# Инструкции для ИИ-агентов
-AGENTS.md
-
 # Моковая БД
 db.json
