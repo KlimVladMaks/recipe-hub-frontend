@@ -4,18 +4,13 @@
  * Задачи модуля:
  *  - определить корень проекта (data-root) и строить пути к ресурсам;
  *  - экранировать пользовательский текст при вставке в DOM;
+ *  - восстановить сессию и загрузить данные API (appReady);
  *  - синхронизировать навигацию с состоянием авторизации;
- *  - дать общие хелперы для модальных окон Bootstrap.
+ *  - дать общие хелперы для модальных окон и ошибок.
  */
 
-import { users, recipes, getUserById } from './data.js';
-import {
-  getSessionUserId,
-  getLocalUsers,
-  getProfileOverrides,
-  getLocalRecipes,
-  clearSession,
-} from './storage.js';
+import { auth, ApiError } from './api.js';
+import * as store from './store.js';
 
 /* ---------------------------- Пути ---------------------------- */
 
@@ -60,35 +55,76 @@ export function formatDate(isoDate) {
   return date.toLocaleDateString('ru-RU');
 }
 
+/* --------------------------- Сессия ----------------------------- */
+
+/**
+ * Готовность приложения: восстановление сессии и загрузка справочников.
+ * Все страничные модули начинают работу с `await appReady`.
+ */
+export const appReady = (async () => {
+  try {
+    const user = await auth.getCurrentUser();
+    store.setCurrentUser(user);
+    await store.loadBase();
+    store.setApiOnline(true);
+  } catch (error) {
+    console.error('RecipeHub: не удалось загрузить данные API', error);
+    store.setApiOnline(false);
+  }
+})();
+
+/** Доступен ли API (используется для баннера). */
+export function isApiOnline() {
+  return store.isApiOnline();
+}
+
 /* -------------------------- Пользователь ------------------------ */
 
-/** Все аккаунты: статические + созданные на устройстве, с учётом правок. */
 export function getAllUsers() {
-  const overrides = getProfileOverrides();
-  return [...users, ...getLocalUsers()].map((user) => {
-    const patch = overrides[String(user.id)];
-    return patch ? { ...user, ...patch } : user;
-  });
+  return store.getAllUsers();
 }
 
-/** Все рецепты: статические + созданные на устройстве. */
 export function getAllRecipes() {
-  return [...recipes, ...getLocalRecipes()];
+  return store.getAllRecipes();
 }
 
-/** Текущий авторизованный пользователь или null. */
 export function getCurrentUser() {
-  const id = getSessionUserId();
-  if (id == null) return null;
-  // Сначала ищем среди локальных (id вида "local-..."), затем среди статических.
-  const all = getAllUsers();
-  return all.find((user) => String(user.id) === String(id)) || getUserById(Number(id));
+  return store.getCurrentUser();
 }
 
-/** Имя пользователя по id (для комментариев и карточек). */
 export function getUserName(authorId) {
-  const user = getAllUsers().find((u) => String(u.id) === String(authorId));
-  return user ? user.name : 'Неизвестный автор';
+  return store.getUserName(authorId);
+}
+
+/* ---------------------------- Ошибки ---------------------------- */
+
+/**
+ * Показать ошибку API. Если передан контейнер — рендерит alert внутри него,
+ * иначе использует alert().
+ */
+export function showApiError(error, container = null) {
+  console.error(error);
+  const message =
+    error instanceof ApiError
+      ? error.message
+      : 'Произошла ошибка. Попробуйте ещё раз.';
+
+  if (container) {
+    container.innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-danger mb-0" role="alert">${escapeHtml(message)}</div>
+      </div>
+    `;
+    return;
+  }
+
+  window.alert(message);
+}
+
+/** Пометить контейнер как загружающийся (aria-busy). */
+export function setLoading(container, isLoading) {
+  if (!container) return;
+  container.setAttribute('aria-busy', String(Boolean(isLoading)));
 }
 
 /* --------------------------- Навигация -------------------------- */
@@ -107,7 +143,6 @@ function markActiveNavLink() {
 /** Показать в шапке либо кнопки входа, либо меню пользователя. */
 function renderAuthState() {
   const user = getCurrentUser();
-  const nameOutputs = document.querySelectorAll('[data-auth-username]');
 
   document.querySelectorAll('[data-auth-guest]').forEach((block) => {
     block.hidden = Boolean(user);
@@ -115,17 +150,38 @@ function renderAuthState() {
   document.querySelectorAll('[data-auth-user]').forEach((block) => {
     block.hidden = !user;
   });
-
-  nameOutputs.forEach((output) => {
+  document.querySelectorAll('[data-auth-username]').forEach((output) => {
     output.textContent = user ? user.name : '';
   });
 
   document.querySelectorAll('[data-logout]').forEach((button) => {
+    if (button.dataset.logoutBound) return;
+    button.dataset.logoutBound = 'true';
     button.addEventListener('click', () => {
-      clearSession();
+      auth.logout();
+      store.resetUserState();
       window.location.href = url('index.html');
     });
   });
+}
+
+/** Баннер, если API недоступен. */
+function renderApiStatus() {
+  if (store.isApiOnline()) return;
+  if (document.querySelector('[data-api-error]')) return;
+
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'container mt-3';
+  wrapper.innerHTML = `
+    <div class="alert alert-danger" role="alert" data-api-error>
+      Не удалось подключиться к API. Запустите <code>npm run api</code>
+      и обновите страницу.
+    </div>
+  `;
+  main.prepend(wrapper);
 }
 
 /* ---------------------------- Модалки --------------------------- */
@@ -143,14 +199,27 @@ export function openModal(id) {
 export function closeModal(id) {
   const element = document.getElementById(id);
   if (!element) return;
-  bootstrap.Modal.getOrCreateInstance(element).hide();
+
+  const modal = bootstrap.Modal.getOrCreateInstance(element);
+
+  // Если окно ещё в процессе открытия, Bootstrap проигнорирует hide().
+  // В этом случае закрываем его сразу после завершения анимации показа.
+  if (modal._isTransitioning) {
+    element.addEventListener('shown.bs.modal', () => modal.hide(), {
+      once: true,
+    });
+    return;
+  }
+
+  modal.hide();
 }
 
 /* ------------------------- Инициализация ------------------------ */
 
-function init() {
+document.addEventListener('DOMContentLoaded', async () => {
+  await appReady;
   markActiveNavLink();
   renderAuthState();
-}
+  renderApiStatus();
+});
 
-document.addEventListener('DOMContentLoaded', init);

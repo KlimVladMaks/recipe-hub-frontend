@@ -18,5 +18,8 @@ npm-debug.log*
 .cache/
 dist/
 
-# Папка для обмена информацией с ИИ
-ai_exchange/
+# Инструкции для ИИ-агентов
+AGENTS.md
+
+# Моковая БД
+db.json

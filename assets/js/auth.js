@@ -1,13 +1,14 @@
 /**
  * auth.js — вход и регистрация.
  *
- * ЛР1: «авторизация» полностью клиентская. Аккаунты хранятся в localStorage
- * (см. storage.js), сессия — там же. Валидация форм реализована вручную,
- * с использованием классов Bootstrap is-invalid / invalid-feedback.
+ * ЛР2: учётные данные проверяет моковый API (json-server-auth).
+ * Сервер возвращает JWT, который сохраняется в localStorage
+ * («Запомнить меня») или sessionStorage.
  */
 
-import { addLocalUser, setSessionUserId, getSessionUserId } from './storage.js';
-import { getAllUsers, url } from './main.js';
+import { auth, ApiError } from './api.js';
+import { appReady, url } from './main.js';
+import * as store from './store.js';
 
 /** Показать/скрыть сообщение об ошибке под полем. */
 function setFieldError(field, message) {
@@ -35,11 +36,26 @@ function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-/** Возвращает true, если пользователь с таким e-mail уже существует. */
-function emailExists(email) {
-  return getAllUsers().some(
-    (user) => user.email.toLowerCase() === email.toLowerCase(),
-  );
+/** Показать/скрыть общий alert формы. */
+function showAlert(element, message) {
+  if (!element) return;
+  element.hidden = false;
+  element.textContent = message;
+}
+
+function hideAlert(element) {
+  if (element) element.hidden = true;
+}
+
+/** Заблокировать кнопку отправки и показать текст загрузки. */
+function setSubmitting(form, submitting, loadingText) {
+  const button = form.querySelector('[type="submit"]');
+  if (!button) return;
+  if (!button.dataset.originalText) {
+    button.dataset.originalText = button.textContent;
+  }
+  button.disabled = submitting;
+  button.textContent = submitting ? loadingText : button.dataset.originalText;
 }
 
 /* ------------------------------ Вход ------------------------------ */
@@ -49,9 +65,12 @@ function initLoginForm() {
     if (form.dataset.loginBound) return;
     form.dataset.loginBound = 'true';
 
-    form.addEventListener('submit', (event) => {
+    const alertBox = form.querySelector('[data-login-error]');
+
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       resetValidation(form);
+      hideAlert(alertBox);
 
       const email = form.elements.email;
       const password = form.elements.password;
@@ -73,30 +92,24 @@ function initLoginForm() {
 
       if (!isValid) return;
 
-      const value = email.value.trim();
+      setSubmitting(form, true, 'Вход…');
 
-      // Демонстрационный аккаунт доступен всегда.
-      if (value === 'demo@recipehub.ru' && password.value === 'demo1234') {
-        setSessionUserId('demo');
+      try {
+        const token = await auth.login(email.value.trim(), password.value);
+        const remember = Boolean(form.elements.remember?.checked);
+        auth.saveToken(token, remember);
         window.location.href = url('pages/profile.html');
-        return;
-      }
-
-      const account = getAllUsers().find(
-        (user) => user.email.toLowerCase() === value.toLowerCase(),
-      );
-
-      if (!account || account.password !== password.value) {
-        const alertBox = form.querySelector('[data-login-error]');
-        if (alertBox) {
-          alertBox.hidden = false;
-          alertBox.textContent = 'Неверный e-mail или пароль.';
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 400) {
+          showAlert(alertBox, 'Неверный e-mail или пароль.');
+        } else if (error instanceof ApiError && error.status === 0) {
+          showAlert(alertBox, error.message);
+        } else {
+          showAlert(alertBox, 'Не удалось войти. Попробуйте ещё раз.');
         }
-        return;
+      } finally {
+        setSubmitting(form, false, '');
       }
-
-      setSessionUserId(account.id);
-      window.location.href = url('pages/profile.html');
     });
   });
 }
@@ -108,9 +121,12 @@ function initRegisterForm() {
     if (form.dataset.registerBound) return;
     form.dataset.registerBound = 'true';
 
-    form.addEventListener('submit', (event) => {
+    const alertBox = document.querySelector('[data-register-error]');
+
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       resetValidation(form);
+      hideAlert(alertBox);
 
       const name = form.elements.name;
       const email = form.elements.email;
@@ -128,9 +144,6 @@ function initRegisterForm() {
 
       if (!isValidEmail(email.value.trim())) {
         setFieldError(email, 'Введите корректный e-mail.');
-        isValid = false;
-      } else if (emailExists(email.value.trim())) {
-        setFieldError(email, 'Пользователь с таким e-mail уже существует.');
         isValid = false;
       } else {
         setFieldValid(email);
@@ -159,18 +172,38 @@ function initRegisterForm() {
 
       if (!isValid) return;
 
-      const newUser = {
-        id: `local-${Date.now()}`,
-        name: name.value.trim(),
-        email: email.value.trim(),
-        password: password.value,
-        bio: '',
-        subscribers: 0,
-      };
+      setSubmitting(form, true, 'Регистрация…');
 
-      addLocalUser(newUser);
-      setSessionUserId(newUser.id);
-      window.location.href = url('pages/profile.html');
+      try {
+        const token = await auth.register({
+          name: name.value.trim(),
+          email: email.value.trim(),
+          password: password.value,
+          bio: '',
+          subscribers: 0,
+        });
+
+        auth.saveToken(token, true);
+        window.location.href = url('pages/profile.html');
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 400) {
+          if (/email/i.test(error.message)) {
+            setFieldError(
+              email,
+              'Пользователь с таким e-mail уже существует.',
+            );
+            showAlert(alertBox, 'Пользователь с таким e-mail уже существует.');
+          } else {
+            showAlert(alertBox, 'Проверьте корректность введённых данных.');
+          }
+        } else if (error instanceof ApiError && error.status === 0) {
+          showAlert(alertBox, error.message);
+        } else {
+          showAlert(alertBox, 'Не удалось зарегистрироваться. Попробуйте ещё раз.');
+        }
+      } finally {
+        setSubmitting(form, false, '');
+      }
     });
   });
 }
@@ -179,12 +212,15 @@ function initRegisterForm() {
 
 /**
  * На странице профиля показать предупреждение и скрыть содержимое,
- * если пользователь не авторизован. Сами данные профиля рендерит profile.js.
+ * если пользователь не авторизован. Данные профиля рендерит profile.js.
  */
-function guardProfilePage() {
+async function guardProfilePage() {
   const container = document.querySelector('[data-profile-page]');
   if (!container) return;
-  if (!getSessionUserId()) {
+
+  await appReady;
+
+  if (!store.getCurrentUser()) {
     const warning = document.querySelector('[data-profile-guest]');
     if (warning) warning.hidden = false;
     container.hidden = true;
@@ -198,3 +234,4 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+

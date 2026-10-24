@@ -1,0 +1,16 @@
+{
+  "name": "recipe-hub-frontend",
+  "version": "2.0.0",
+  "private": true,
+  "description": "RecipeHub — учебный фронтенд сервиса обмена рецептами (ЛР2: моковый API на json-server)",
+  "scripts": {
+    "api": "node server/index.js",
+    "start": "npm run api",
+    "reset-db": "node scripts/reset-db.js",
+    "smoke": "node scripts/smoke.js"
+  },
+  "devDependencies": {
+    "json-server": "0.17.4",
+    "json-server-auth": "2.1.0"
+  }
+}
