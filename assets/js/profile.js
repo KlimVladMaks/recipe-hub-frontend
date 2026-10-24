@@ -9,6 +9,7 @@ import * as api from './api.js';
 import * as store from './store.js';
 import {
   appReady,
+  announce,
   escapeHtml,
   getCurrentUser,
   closeModal,
@@ -16,6 +17,29 @@ import {
   showApiError,
 } from './main.js';
 import { fillFilterOptions, renderCollection } from './recipes.js';
+
+/** Показать ошибку внутри модальной формы. */
+function showFormError(form, message) {
+  const box = form.querySelector('[data-form-error]');
+  if (!box) return;
+  box.hidden = false;
+  box.textContent = message;
+}
+
+/** Скрыть ошибку модальной формы. */
+function clearFormError(form) {
+  const box = form.querySelector('[data-form-error]');
+  if (!box) return;
+  box.hidden = true;
+  box.textContent = '';
+}
+
+/** Текст ошибки API для формы. */
+function formErrorMessage(error) {
+  return error instanceof api.ApiError
+    ? error.message
+    : 'Произошла ошибка. Попробуйте ещё раз.';
+}
 
 /** Заполнить шапку профиля. */
 function renderProfileHeader(user) {
@@ -109,7 +133,7 @@ async function renderSubscriptions(user) {
           <div class="col">
             <div class="card h-100">
               <div class="card-body">
-                <h2 class="h6 mb-1">${escapeHtml(author.name)}</h2>
+                <h3 class="h6 mb-1">${escapeHtml(author.name)}</h3>
                 <p class="text-muted small mb-0">${escapeHtml(author.bio || '')}</p>
               </div>
             </div>
@@ -132,15 +156,25 @@ function initNewRecipeForm(user) {
   const form = document.querySelector('[data-new-recipe-form]');
   if (!form) return;
 
+  const title = form.elements.title;
+
+  title.addEventListener('input', () => {
+    title.classList.remove('is-invalid');
+    title.setAttribute('aria-invalid', 'false');
+  });
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    clearFormError(form);
 
-    const title = form.elements.title;
     if (!title.value.trim()) {
       title.classList.add('is-invalid');
+      title.setAttribute('aria-invalid', 'true');
+      title.focus();
       return;
     }
     title.classList.remove('is-invalid');
+    title.setAttribute('aria-invalid', 'false');
 
     const steps = form.elements.steps.value
       .split('\n')
@@ -168,6 +202,7 @@ function initNewRecipeForm(user) {
 
     const button = form.querySelector('[type="submit"]');
     if (button) button.disabled = true;
+    form.setAttribute('aria-busy', 'true');
 
     try {
       const created = await api.recipes.create(recipe);
@@ -175,10 +210,12 @@ function initNewRecipeForm(user) {
       form.reset();
       closeModal('newRecipeModal');
       await renderPublished(user);
+      announce('Рецепт опубликован');
     } catch (error) {
-      showApiError(error);
+      showFormError(form, formErrorMessage(error));
     } finally {
       if (button) button.disabled = false;
+      form.setAttribute('aria-busy', 'false');
     }
   });
 }
@@ -188,15 +225,25 @@ function initEditProfileForm(user) {
   const form = document.querySelector('[data-edit-profile-form]');
   if (!form) return;
 
+  const name = form.elements.name;
+
+  name.addEventListener('input', () => {
+    name.classList.remove('is-invalid');
+    name.setAttribute('aria-invalid', 'false');
+  });
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    clearFormError(form);
 
-    const name = form.elements.name;
     if (name.value.trim().length < 2) {
       name.classList.add('is-invalid');
+      name.setAttribute('aria-invalid', 'true');
+      name.focus();
       return;
     }
     name.classList.remove('is-invalid');
+    name.setAttribute('aria-invalid', 'false');
 
     const changes = {
       name: name.value.trim(),
@@ -205,6 +252,7 @@ function initEditProfileForm(user) {
 
     const button = form.querySelector('[type="submit"]');
     if (button) button.disabled = true;
+    form.setAttribute('aria-busy', 'true');
 
     try {
       const updated = await api.users.update(user.id, changes);
@@ -215,10 +263,12 @@ function initEditProfileForm(user) {
       document.querySelectorAll('[data-auth-username]').forEach((element) => {
         element.textContent = updated.name;
       });
+      announce('Профиль обновлён');
     } catch (error) {
-      showApiError(error);
+      showFormError(form, formErrorMessage(error));
     } finally {
       if (button) button.disabled = false;
+      form.setAttribute('aria-busy', 'false');
     }
   });
 }

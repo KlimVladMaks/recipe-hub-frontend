@@ -14,6 +14,7 @@ import * as store from './store.js';
 function setFieldError(field, message) {
   field.classList.add('is-invalid');
   field.classList.remove('is-valid');
+  field.setAttribute('aria-invalid', 'true');
   const feedback = field.parentElement.querySelector('.invalid-feedback');
   if (feedback && message) feedback.textContent = message;
 }
@@ -22,12 +23,14 @@ function setFieldError(field, message) {
 function setFieldValid(field) {
   field.classList.remove('is-invalid');
   field.classList.add('is-valid');
+  field.setAttribute('aria-invalid', 'false');
 }
 
 /** Очистить состояние валидации у формы. */
 function resetValidation(form) {
   form.querySelectorAll('.is-invalid, .is-valid').forEach((field) => {
     field.classList.remove('is-invalid', 'is-valid');
+    field.removeAttribute('aria-invalid');
   });
 }
 
@@ -41,6 +44,8 @@ function showAlert(element, message) {
   if (!element) return;
   element.hidden = false;
   element.textContent = message;
+  // role="alert" уже озвучит текст; фокус помогает продолжить с места ошибки.
+  element.focus();
 }
 
 function hideAlert(element) {
@@ -54,6 +59,7 @@ function setSubmitting(form, submitting, loadingText) {
   if (!button.dataset.originalText) {
     button.dataset.originalText = button.textContent;
   }
+  form.setAttribute('aria-busy', String(Boolean(submitting)));
   button.disabled = submitting;
   button.textContent = submitting ? loadingText : button.dataset.originalText;
 }
@@ -90,7 +96,10 @@ function initLoginForm() {
         setFieldValid(password);
       }
 
-      if (!isValid) return;
+      if (!isValid) {
+        form.querySelector('.is-invalid')?.focus();
+        return;
+      }
 
       setSubmitting(form, true, 'Вход…');
 
@@ -165,12 +174,17 @@ function initRegisterForm() {
 
       if (terms && !terms.checked) {
         terms.classList.add('is-invalid');
+        terms.setAttribute('aria-invalid', 'true');
         isValid = false;
       } else if (terms) {
         terms.classList.remove('is-invalid');
+        terms.setAttribute('aria-invalid', 'false');
       }
 
-      if (!isValid) return;
+      if (!isValid) {
+        form.querySelector('.is-invalid')?.focus();
+        return;
+      }
 
       setSubmitting(form, true, 'Регистрация…');
 

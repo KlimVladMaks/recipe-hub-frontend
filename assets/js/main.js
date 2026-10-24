@@ -127,6 +127,23 @@ export function setLoading(container, isLoading) {
   container.setAttribute('aria-busy', String(Boolean(isLoading)));
 }
 
+/* -------------------------- Озвучивание ------------------------- */
+
+/**
+ * Объявить сообщение скринридеру через общий live-region.
+ * Регион присутствует на каждой странице ([data-live-region]).
+ */
+export function announce(message) {
+  const region = document.querySelector('[data-live-region]');
+  if (!region) return;
+
+  // Сначала очищаем, чтобы одинаковые сообщения озвучивались повторно.
+  region.textContent = '';
+  window.setTimeout(() => {
+    region.textContent = message;
+  }, 100);
+}
+
 /* --------------------------- Навигация -------------------------- */
 
 /** Активный пункт меню по текущему файлу. */

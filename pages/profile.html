@@ -11,6 +11,9 @@
 </head>
 <body data-root="..">
 
+  <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 p-2 bg-white text-dark border rounded z-3"
+    href="#main-content">Перейти к основному содержимому</a>
+
   <header>
     <nav class="navbar navbar-expand-lg bg-white border-bottom" aria-label="Основная навигация">
       <div class="container">
@@ -49,35 +52,37 @@
     </nav>
   </header>
 
-  <main class="rh-page py-4 py-lg-5">
+  <main class="rh-page py-4 py-lg-5" id="main-content" tabindex="-1">
     <div class="container">
 
+      <h1 class="h3 mb-3" id="profile-page-title">Личный кабинет</h1>
+
       <!-- Предупреждение для неавторизованных -->
-      <div class="alert alert-warning" role="alert" data-profile-guest hidden>
-        Вы не авторизованы. <a href="login.html">Войдите</a> или
-        <a href="register.html">зарегистрируйтесь</a>, чтобы открыть личный кабинет.
+      <div class="alert alert-warning" role="alert" tabindex="-1" data-profile-guest hidden>
+        Вы не авторизованы. <a class="alert-link" href="login.html">Войдите</a> или
+        <a class="alert-link" href="register.html">зарегистрируйтесь</a>, чтобы открыть личный кабинет.
       </div>
 
       <div data-profile-page hidden>
         <!-- Шапка профиля -->
         <div class="card shadow-sm mb-4">
           <div class="card-body d-flex flex-wrap align-items-center gap-3">
-            <div class="rh-placeholder rounded-circle" style="width:4.5rem;height:4.5rem;">
+            <div class="rh-placeholder rounded-circle" style="width:4.5rem;height:4.5rem;" aria-hidden="true">
               <svg class="rh-icon fs-2" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-user"></use></svg>
             </div>
             <div class="flex-grow-1">
-              <h1 class="h4 mb-1" data-profile-name>Пользователь</h1>
+              <h2 class="h4 mb-1" data-profile-name>Пользователь</h2>
               <p class="text-muted mb-1" data-profile-email></p>
               <p class="mb-0" data-profile-bio></p>
             </div>
             <div class="d-flex gap-2">
               <button class="btn btn-rh-primary" type="button"
-                data-bs-toggle="modal" data-bs-target="#newRecipeModal">
+                data-bs-toggle="modal" data-bs-target="#newRecipeModal" aria-haspopup="dialog">
                 <svg class="rh-icon me-1" aria-hidden="true"><use href="../assets/img/sprite.svg#icon-plus"></use></svg>
                 Новый рецепт
               </button>
               <button class="btn btn-outline-secondary" type="button"
-                data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                data-bs-toggle="modal" data-bs-target="#editProfileModal" aria-haspopup="dialog">
                 Редактировать
               </button>
             </div>
@@ -85,7 +90,7 @@
         </div>
 
         <!-- Разделы кабинета -->
-        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist" aria-label="Разделы личного кабинета">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="tab-published" data-bs-toggle="tab"
               data-bs-target="#pane-published" type="button" role="tab"
@@ -106,16 +111,19 @@
         <div class="tab-content">
           <div class="tab-pane fade show active" id="pane-published" role="tabpanel"
             aria-labelledby="tab-published" tabindex="0">
+            <h2 class="visually-hidden">Мои публикации</h2>
             <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" data-profile-published></div>
           </div>
 
           <div class="tab-pane fade" id="pane-saved" role="tabpanel"
             aria-labelledby="tab-saved" tabindex="0">
+            <h2 class="visually-hidden">Сохранённые рецепты</h2>
             <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" data-profile-saved></div>
           </div>
 
           <div class="tab-pane fade" id="pane-subscriptions" role="tabpanel"
             aria-labelledby="tab-subscriptions" tabindex="0">
+            <h2 class="visually-hidden">Подписки на кулинаров</h2>
             <div class="row row-cols-1 row-cols-md-3 g-4" data-profile-subscriptions></div>
           </div>
         </div>
@@ -124,7 +132,8 @@
   </main>
 
   <!-- Модалка: новый рецепт -->
-  <div class="modal fade" id="newRecipeModal" tabindex="-1" aria-labelledby="newRecipeModalLabel" aria-hidden="true">
+  <div class="modal fade" id="newRecipeModal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="newRecipeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <form data-new-recipe-form novalidate>
@@ -133,10 +142,12 @@
             <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Закрыть"></button>
           </div>
           <div class="modal-body">
+            <div class="alert alert-danger" role="alert" data-form-error hidden></div>
             <div class="mb-3">
               <label class="form-label" for="recipe-title">Название</label>
-              <input class="form-control" type="text" id="recipe-title" name="title" required>
-              <div class="invalid-feedback">Укажите название рецепта.</div>
+              <input class="form-control" type="text" id="recipe-title" name="title"
+                aria-describedby="recipe-title-error" required>
+              <div class="invalid-feedback" id="recipe-title-error">Укажите название рецепта.</div>
             </div>
             <div class="row g-3">
               <div class="col-md-6">
@@ -184,7 +195,8 @@
   </div>
 
   <!-- Модалка: редактирование профиля -->
-  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+  <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="editProfileModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <form data-edit-profile-form novalidate>
@@ -193,9 +205,12 @@
             <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Закрыть"></button>
           </div>
           <div class="modal-body">
+            <div class="alert alert-danger" role="alert" data-form-error hidden></div>
             <div class="mb-3">
               <label class="form-label" for="profile-name-input">Имя</label>
-              <input class="form-control" type="text" id="profile-name-input" name="name" required>
+              <input class="form-control" type="text" id="profile-name-input" name="name"
+                autocomplete="name" aria-describedby="profile-name-error" required>
+              <div class="invalid-feedback" id="profile-name-error">Укажите имя (минимум 2 символа).</div>
             </div>
             <div class="mb-0">
               <label class="form-label" for="profile-bio-input">О себе</label>
@@ -219,15 +234,19 @@
           <p class="text-muted small mb-0">Учебный проект по фронтенд-разработке, ИТМО.</p>
         </div>
         <div class="col-md-6">
-          <ul class="list-unstyled d-flex flex-wrap gap-3 mb-0 justify-content-md-end">
-            <li><a href="../index.html">Главная</a></li>
-            <li><a href="search.html">Поиск</a></li>
-            <li><a href="login.html">Вход</a></li>
-          </ul>
+          <nav aria-label="Навигация в подвале">
+            <ul class="list-unstyled d-flex flex-wrap gap-3 mb-0 justify-content-md-end">
+              <li><a href="../index.html">Главная</a></li>
+              <li><a href="search.html">Поиск</a></li>
+              <li><a href="login.html">Вход</a></li>
+            </ul>
+          </nav>
         </div>
       </div>
     </div>
   </footer>
+
+  <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-live-region></div>
 
   <script type="module" src="../assets/js/main.js"></script>
   <script type="module" src="../assets/js/auth.js"></script>

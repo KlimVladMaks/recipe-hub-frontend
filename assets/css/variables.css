@@ -16,6 +16,17 @@
   --rh-color-border: #dee2e6;
   --rh-color-text: #212529;
   --rh-color-text-muted: #6c757d;
+  /* Более тёмный серый для текста/границ кнопок на светлом фоне:
+     #6c757d на #f8f9fa даёт контраст 4.45 — меньше требуемых 4.5. */
+  --rh-color-text-muted-strong: #5b6269;
+
+  /* Ссылки: стандартный #0d6efd на фоне #f8f9fa даёт контраст 4.27.
+     #0a58ca — 6.11 и соответствует WCAG AA. Bootstrap 5.3 рисует
+     ссылки через --bs-link-color-rgb, поэтому переопределяем оба вида. */
+  --bs-link-color: #0a58ca;
+  --bs-link-color-rgb: 10, 88, 202;
+  --bs-link-hover-color: #084298;
+  --bs-link-hover-color-rgb: 8, 66, 152;
 
   /* Типографика */
   --rh-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",

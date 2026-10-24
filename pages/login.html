@@ -11,6 +11,9 @@
 </head>
 <body data-root="..">
 
+  <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 p-2 bg-white text-dark border rounded z-3"
+    href="#main-content">Перейти к основному содержимому</a>
+
   <header>
     <nav class="navbar navbar-expand-lg bg-white border-bottom" aria-label="Основная навигация">
       <div class="container">
@@ -49,30 +52,30 @@
     </nav>
   </header>
 
-  <main class="rh-page py-5">
+  <main class="rh-page py-5" id="main-content" tabindex="-1">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-5">
           <div class="card shadow-sm">
             <div class="card-body p-4">
-              <h1 class="h3 mb-1">Вход в аккаунт</h1>
+              <h1 class="h3 mb-1" id="login-title">Вход в аккаунт</h1>
               <p class="text-muted">Войдите, чтобы публиковать рецепты и сохранять чужие.</p>
 
-              <div class="alert alert-danger" role="alert" data-login-error hidden></div>
+              <div class="alert alert-danger" role="alert" tabindex="-1" data-login-error hidden></div>
 
-              <form data-login-form novalidate>
+              <form data-login-form aria-labelledby="login-title" novalidate>
                 <div class="mb-3">
                   <label class="form-label" for="login-email">E-mail</label>
                   <input class="form-control" type="email" id="login-email" name="email"
-                    autocomplete="email" required>
-                  <div class="invalid-feedback">Введите корректный e-mail.</div>
+                    autocomplete="email" aria-describedby="login-email-error" required>
+                  <div class="invalid-feedback" id="login-email-error">Введите корректный e-mail.</div>
                 </div>
 
                 <div class="mb-3">
                   <label class="form-label" for="login-password">Пароль</label>
                   <input class="form-control" type="password" id="login-password" name="password"
-                    autocomplete="current-password" required>
-                  <div class="invalid-feedback">Введите пароль.</div>
+                    autocomplete="current-password" aria-describedby="login-password-error" required>
+                  <div class="invalid-feedback" id="login-password-error">Введите пароль.</div>
                 </div>
 
                 <div class="mb-3 form-check">
@@ -106,15 +109,19 @@
           <p class="text-muted small mb-0">Учебный проект по фронтенд-разработке, ИТМО.</p>
         </div>
         <div class="col-md-6">
-          <ul class="list-unstyled d-flex flex-wrap gap-3 mb-0 justify-content-md-end">
-            <li><a href="../index.html">Главная</a></li>
-            <li><a href="search.html">Поиск</a></li>
-            <li><a href="register.html">Регистрация</a></li>
-          </ul>
+          <nav aria-label="Навигация в подвале">
+            <ul class="list-unstyled d-flex flex-wrap gap-3 mb-0 justify-content-md-end">
+              <li><a href="../index.html">Главная</a></li>
+              <li><a href="search.html">Поиск</a></li>
+              <li><a href="register.html">Регистрация</a></li>
+            </ul>
+          </nav>
         </div>
       </div>
     </div>
   </footer>
+
+  <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-live-region></div>
 
   <script type="module" src="../assets/js/main.js"></script>
   <script type="module" src="../assets/js/auth.js"></script>

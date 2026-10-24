@@ -9,6 +9,7 @@ import * as api from './api.js';
 import * as store from './store.js';
 import {
   appReady,
+  announce,
   escapeHtml,
   url,
   formatDuration,
@@ -69,6 +70,7 @@ function renderRecipe(recipe, author) {
   if (recipe.videoUrl) {
     videoBlock.hidden = false;
     videoFrame.src = recipe.videoUrl;
+    videoFrame.title = `Видео приготовления: ${recipe.title}`;
   }
 
   // Автор
@@ -109,13 +111,22 @@ function initShareButton() {
     try {
       await navigator.clipboard.writeText(input.value);
       button.textContent = 'Скопировано';
+      announce('Ссылка на рецепт скопирована');
       setTimeout(() => {
         button.textContent = 'Скопировать ссылку';
       }, 1500);
     } catch {
       input.select();
+      announce('Ссылка выделена. Скопируйте её вручную.');
     }
   });
+}
+
+/** Показать и озвучить состояние «рецепт не найден». */
+function showNotFound(alertElement) {
+  if (!alertElement) return;
+  alertElement.hidden = false;
+  alertElement.focus();
 }
 
 async function init() {
@@ -124,7 +135,7 @@ async function init() {
   const id = getRecipeIdFromUrl();
 
   if (!id) {
-    if (notFound) notFound.hidden = false;
+    showNotFound(notFound);
     initShareButton();
     return;
   }
@@ -152,7 +163,7 @@ async function init() {
     if (view) view.hidden = true;
 
     if (error instanceof api.ApiError && error.status === 404) {
-      if (notFound) notFound.hidden = false;
+      showNotFound(notFound);
     } else {
       showApiError(error);
     }

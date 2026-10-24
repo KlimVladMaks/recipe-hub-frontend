@@ -49,6 +49,29 @@ body {
   --bs-btn-active-border-color: var(--rh-color-primary-hover);
 }
 
+/* Вторичная контурная кнопка: штатный #6c757d на фоне #f8f9fa даёт
+   контраст 4.45 (чуть ниже порога AA). Более тёмный оттенок — 5.87. */
+.btn-outline-secondary {
+  --bs-btn-color: var(--rh-color-text-muted-strong);
+  --bs-btn-border-color: var(--rh-color-text-muted-strong);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--rh-color-text-muted-strong);
+  --bs-btn-hover-border-color: var(--rh-color-text-muted-strong);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--rh-color-text-muted-strong);
+  --bs-btn-active-border-color: var(--rh-color-text-muted-strong);
+  --bs-btn-disabled-color: var(--rh-color-text-muted-strong);
+  --bs-btn-disabled-border-color: var(--rh-color-text-muted-strong);
+}
+
+/* Видимый фокус для обычных ссылок (у .btn свой box-shadow от Bootstrap).
+   currentColor гарантирует контраст на любом фоне. */
+a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: var(--rh-radius-sm);
+}
+
 /* Иконки из SVG-спрайта: размер и выравнивание.
    Цвет и способ отрисовки (fill/stroke) задаются внутри symbol. */
 .rh-icon {

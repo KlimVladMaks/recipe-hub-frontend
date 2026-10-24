@@ -10,6 +10,7 @@ import * as api from './api.js';
 import * as store from './store.js';
 import {
   appReady,
+  announce,
   escapeHtml,
   formatDate,
   getUserName,
@@ -178,7 +179,7 @@ function commentTemplate(comment) {
     <li class="rh-comment py-3">
       <div class="d-flex justify-content-between align-items-baseline gap-2">
         <strong>${escapeHtml(getUserName(comment.userId))}</strong>
-        <span class="text-muted small">${escapeHtml(formatDate(comment.createdAt))}</span>
+        <time class="text-muted small" datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatDate(comment.createdAt))}</time>
       </div>
       <p class="mb-0">${escapeHtml(comment.text)}</p>
     </li>
@@ -206,18 +207,32 @@ function initCommentForm(recipeId) {
   if (!form || form.dataset.commentBound) return;
   form.dataset.commentBound = 'true';
 
+  const textarea = form.elements.text;
+
+  textarea.addEventListener('input', () => {
+    if (textarea.value.trim()) {
+      textarea.classList.remove('is-invalid');
+      textarea.setAttribute('aria-invalid', 'false');
+    }
+  });
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const user = requireUser('оставить комментарий');
     if (!user) return;
 
-    const textarea = form.elements.text;
     const text = textarea.value.trim();
-    if (!text) return;
+    if (!text) {
+      textarea.classList.add('is-invalid');
+      textarea.setAttribute('aria-invalid', 'true');
+      textarea.focus();
+      return;
+    }
 
     const button = form.querySelector('[type="submit"]');
     if (button) button.disabled = true;
+    form.setAttribute('aria-busy', 'true');
 
     try {
       const created = await api.comments.create({
@@ -229,11 +244,15 @@ function initCommentForm(recipeId) {
 
       store.addComment(created);
       textarea.value = '';
+      textarea.classList.remove('is-invalid');
+      textarea.removeAttribute('aria-invalid');
       renderComments(recipeId);
+      announce('Комментарий добавлен');
     } catch (error) {
       handleActionError(error);
     } finally {
       if (button) button.disabled = false;
+      form.setAttribute('aria-busy', 'false');
     }
   });
 }
@@ -284,7 +303,7 @@ function authorCardTemplate(author) {
         </div>
         <div class="card-footer bg-white border-top-0">
           <button class="btn btn-sm btn-outline-secondary w-100" type="button"
-            data-subscribe-author="${author.id}">
+            data-subscribe-author="${author.id}" aria-pressed="false">
             Подписаться
           </button>
         </div>

@@ -27,9 +27,8 @@ export function recipeCardTemplate(recipe) {
 
   return `
     <article class="card h-100 shadow-sm">
-      <a href="${url(`pages/recipe.html?id=${recipe.id}`)}" class="rh-link-reset">
-        <img src="${url(recipe.image)}" alt="" class="card-img-top rh-card-image">
-      </a>
+      <img src="${url(recipe.image)}" alt="" class="card-img-top rh-card-image"
+        loading="lazy" decoding="async">
       <div class="card-body d-flex flex-column">
         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
           <span class="badge text-bg-light border">${escapeHtml(recipe.dishType)}</span>
@@ -38,15 +37,17 @@ export function recipeCardTemplate(recipe) {
         <h3 class="h6 card-title mb-1">
           <a href="${url(`pages/recipe.html?id=${recipe.id}`)}" class="rh-link-reset stretched-link">${escapeHtml(recipe.title)}</a>
         </h3>
-        <p class="card-text text-muted small flex-grow-1">${escapeHtml(authorName)}</p>
+        <p class="card-text text-muted small flex-grow-1">
+          <span class="visually-hidden">Автор: </span>${escapeHtml(authorName)}
+        </p>
         <div class="d-flex justify-content-between align-items-center small text-muted">
           <span class="d-inline-flex align-items-center gap-1">
             <svg class="rh-icon" aria-hidden="true"><use href="${url('assets/img/sprite.svg#icon-clock')}"></use></svg>
-            ${escapeHtml(formatDuration(recipe.timeMinutes))}
+            <span class="visually-hidden">Время: </span>${escapeHtml(formatDuration(recipe.timeMinutes))}
           </span>
           <span class="d-inline-flex align-items-center gap-1">
             <svg class="rh-icon" aria-hidden="true"><use href="${url('assets/img/sprite.svg#icon-heart')}"></use></svg>
-            <span data-like-count="${recipe.id}">${likesCount}</span>
+            <span class="visually-hidden">Лайков: </span><span data-like-count="${recipe.id}">${likesCount}</span>
           </span>
           ${bookmarked ? '<span class="badge text-bg-secondary">Сохранён</span>' : ''}
         </div>
