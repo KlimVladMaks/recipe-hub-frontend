@@ -297,11 +297,11 @@ function authorCardTemplate(author) {
         <div class="card-body">
           <h3 class="h6 mb-1">${escapeHtml(author.name)}</h3>
           <p class="text-muted small mb-2">${escapeHtml(author.bio || '')}</p>
-          <span class="badge text-bg-light border">
+          <span class="badge rh-badge">
             <span data-subscribers="${author.id}">${count}</span> подписчиков
           </span>
         </div>
-        <div class="card-footer bg-white border-top-0">
+        <div class="card-footer bg-body border-top-0">
           <button class="btn btn-sm btn-outline-secondary w-100" type="button"
             data-subscribe-author="${author.id}" aria-pressed="false">
             Подписаться

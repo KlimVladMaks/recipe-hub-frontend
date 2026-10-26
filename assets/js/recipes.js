@@ -31,7 +31,7 @@ export function recipeCardTemplate(recipe) {
         loading="lazy" decoding="async">
       <div class="card-body d-flex flex-column">
         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-          <span class="badge text-bg-light border">${escapeHtml(recipe.dishType)}</span>
+          <span class="badge rh-badge">${escapeHtml(recipe.dishType)}</span>
           <span class="text-muted small">${escapeHtml(recipe.difficulty)} сложность</span>
         </div>
         <h3 class="h6 card-title mb-1">

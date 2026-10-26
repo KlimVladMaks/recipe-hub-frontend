@@ -11,6 +11,7 @@
 
 import { auth, ApiError } from './api.js';
 import * as store from './store.js';
+import { initTheme } from './theme.js';
 
 /* ---------------------------- Пути ---------------------------- */
 
@@ -234,6 +235,9 @@ export function closeModal(id) {
 /* ------------------------- Инициализация ------------------------ */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Тема инициализируется до ожидания API: переключатель должен работать,
+  // даже если моковый сервер не запущен.
+  initTheme({ announce });
   await appReady;
   markActiveNavLink();
   renderAuthState();
