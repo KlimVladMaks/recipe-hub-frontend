@@ -3,8 +3,11 @@
  *
  * Стек:
  *  - json-server 0.17 — REST поверх db.json;
- *  - json-server-auth — JWT-авторизация и проверка прав;
- *  - express-статика — те же файлы фронтенда на том же origin.
+ *  - json-server-auth — JWT-авторизация и проверка прав.
+ *
+ * Начиная с ЛР3 фронтенд собирается Vite и запускается отдельно
+ * (`npm run dev`), поэтому этот сервер отвечает только за API.
+ * CORS у json-server включён по умолчанию.
  *
  * Права задаются в нотации json-server-auth (как у Unix):
  *   первая цифра — права владельца ресурса,
@@ -17,13 +20,22 @@
  * Владелец определяется по полю userId (для коллекции users — по id).
  */
 
+const fs = require('fs');
 const path = require('path');
 const jsonServer = require('json-server');
 const auth = require('json-server-auth');
 
 const ROOT = path.join(__dirname, '..');
 const DB_FILE = path.join(ROOT, 'db.json');
+const SEED_FILE = path.join(ROOT, 'db.seed.json');
 const PORT = Number(process.env.PORT) || 3000;
+
+// На свежем клоне db.json отсутствует (он в .gitignore), поэтому
+// создаём рабочую базу из эталонного seed-файла.
+if (!fs.existsSync(DB_FILE)) {
+  fs.copyFileSync(SEED_FILE, DB_FILE);
+  console.log(`Создана база данных из ${SEED_FILE}`);
+}
 
 /** Рекурсивно убирает поле password из ответов API. */
 function stripPasswords(value) {
@@ -43,7 +55,9 @@ function stripPasswords(value) {
 const app = jsonServer.create();
 const router = jsonServer.router(DB_FILE);
 const middlewares = jsonServer.defaults({
-  static: ROOT,
+  // Раздаём только public/ (иконки и заглушки), чтобы не отдавать
+  // исходники фронтенда с API-сервера.
+  static: path.join(ROOT, 'public'),
   logger: true,
 });
 

@@ -18,5 +18,10 @@ npm-debug.log*
 .cache/
 dist/
 
+# Переменные окружения Vite
+.env
+.env.local
+.env.*.local
+
 # Моковая БД
 db.json

@@ -3,109 +3,85 @@
 Учебный проект по дисциплине «Фронтенд-разработка» (ИТМО).
 Вариант №5: сервис для обмена рецептами и кулинарных блогов.
 
-## Текущий этап — ЛР2, ДР2, ДР3 и ДР4
+## Текущий этап — ЛР3: SPA на Vue 3
 
-Сайт из ЛР1 подключён к моковому API на **json-server**. Реализовано:
+Приложение из ЛР1–ЛР2 и домашних работ перенесено на **Vue 3**:
 
-- регистрация и вход с JWT (`json-server-auth`);
-- разграничение прав: владелец изменяет свои записи, читать могут все;
-- загрузка рецептов, пользователей и комментариев из API;
-- серверная фильтрация и сортировка рецептов;
-- лайки, закладки, подписки и комментарии через API;
-- личный кабинет: публикации, сохранённые рецепты, подписки, создание
-  рецепта и редактирование профиля.
+- подключён **Vue Router** с историей, `meta` и navigation guards;
+- работа с API переведена на **Axios** (единый клиент, interceptors,
+  автоматическая подстановка JWT);
+- состояние хранится в **Pinia** (`auth` и `catalog`);
+- повторяющаяся логика вынесена в **composables** (`useTheme`,
+  `useLiveRegion`, `useRecipeSearch`, `useBootstrapModal`);
+- интерфейс разделён на **views** и **components**;
+- сохранены все функции ЛР2: вход, регистрация, личный кабинет,
+  публикации, сохранённые рецепты, подписки, поиск с фильтрами,
+  страница рецепта, лайки, закладки и комментарии;
+- сохранены ДР2–ДР4: доступность, светлая/тёмная темы и SVG-спрайт.
 
-Дополнительно выполнены:
-
-- **ДР2 — доступность в HTML**: семантика, ARIA, контраст и проверка
-  через Firefox Accessibility Inspector и Lighthouse (раздел
-  «Доступность (ДР2)»);
-- **ДР3 — темизация через CSS-переменные**: светлая и тёмная темы,
-  следование системной настройке и ручной переключатель (раздел
-  «Темизация (ДР3)»);
-- **ДР4 — SVG-спрайт**: все иконки интерфейса вынесены в
-  `assets/img/sprite.svg` и используются через `<use>` (раздел
-  «SVG-спрайт (ДР4)»).
-
-В `localStorage` хранятся только JWT (при «Запомнить меня») и настройка
-темы `recipehub-theme`; остальные данные приложения живут на сервере.
+Моковый API и модель данных не изменились: это тот же `json-server`
+с JWT-авторизацией. Статические страницы `pages/*.html` заменены
+SPA-маршрутами; для старых адресов добавлены редиректы.
 
 ## Стек
 
-- HTML5, CSS3, Bootstrap 5.3.8 (подключён локально);
-- CSS-переменные и color modes Bootstrap 5.3 (`data-bs-theme`);
-- JavaScript (ES-модули, без сборщиков и транспиляции);
-- `fetch` для запросов к API;
-- `json-server@0.17.4` — моковый REST API;
-- `json-server-auth@2.1.0` — JWT-авторизация, bcrypt и guards;
-- Node.js 18+ (проверено на Node 24).
-
-Версии `json-server` и `json-server-auth` зафиксированы без `^`:
-ветка `json-server` 1.x несовместима с `json-server-auth`.
-
-## Структура проекта
-
-```
-recipe-hub-frontend/
-├── index.html                  # Главная: лента и кулинары
-├── pages/
-│   ├── login.html              # Вход
-│   ├── register.html           # Регистрация
-│   ├── profile.html            # Личный кабинет
-│   ├── search.html             # Поиск с фильтрацией
-│   └── recipe.html             # Страница рецепта
-├── assets/
-│   ├── css/
-│   │   ├── variables.css       # токены светлой и тёмной темы (ДР3)
-│   │   └── style.css           # минимальные кастомные стили
-│   ├── img/
-│   │   ├── sprite.svg          # SVG-спрайт иконок (ДР4)
-│   │   ├── favicon.svg         # иконка сайта
-│   │   └── recipe-placeholder.svg
-│   ├── js/
-│   │   ├── api.js              # fetch-клиент, JWT, ресурсы API
-│   │   ├── store.js            # кэш данных и селекторы
-│   │   ├── constants.js        # справочники типов и сложности
-│   │   ├── main.js             # appReady, навигация, утилиты
-│   │   ├── theme.js            # переключатель светлой/тёмной темы (ДР3)
-│   │   ├── auth.js             # вход и регистрация
-│   │   ├── recipes.js          # главная и поиск
-│   │   ├── recipe.js           # страница рецепта
-│   │   ├── profile.js          # личный кабинет
-│   │   └── social.js           # лайки, закладки, подписки, комментарии
-│   └── vendor/bootstrap/       # Bootstrap 5.3.8
-├── server/
-│   └── index.js                # json-server + auth + статика + guards
-├── scripts/
-│   ├── reset-db.js             # сброс рабочей базы
-│   └── smoke.js                # проверка API
-├── db.json                     # рабочая база (изменяется при работе)
-├── db.seed.json                # эталон базы для сброса
-├── package.json
-└── README.md
-```
+- **Vue 3.5** (`<script setup>`), **Vue Router 4**, **Pinia 3**;
+- **Axios 1.x** для запросов к API;
+- **Vite 8** — dev-сервер и сборка;
+- **Bootstrap 5.3.8** (npm) — сетка, компоненты, color modes;
+- **json-server 0.17.4** — моковый REST API;
+- **json-server-auth 2.1.0** — JWT, bcrypt и guards;
+- Node.js 20.19+ (проверено на Node 24.12);
+- JavaScript без TypeScript.
 
 ## Запуск
 
+Нужны два процесса: API и dev-сервер Vite.
+
 ```bash
 npm install
+
+# терминал 1 — моковый API на http://localhost:3000
 npm run api
-# открыть http://localhost:3000/
+
+# терминал 2 — фронтенд на http://localhost:5173
+npm run dev
 ```
 
-`npm run api` запускает `server/index.js`: json-server раздаёт и API,
-и статические файлы на одном порту `3000`. Благодаря этому origin
-совпадает, а CORS не требуется.
+Открыть **http://localhost:5173/**.
 
-Если открыть фронтенд через другой сервер (например,
-`python3 -m http.server 8000`), API всё равно будет доступен на
-`http://localhost:3000` — CORS у json-server включён по умолчанию.
+`server/index.js` теперь отвечает только за API. CORS у `json-server`
+включён по умолчанию, поэтому dev-сервер Vite может обращаться к
+`http://localhost:3000` напрямую. Если `db.json` отсутствует (он в
+`.gitignore`), сервер при старте создаст его из `db.seed.json`.
+
+Адрес API можно переопределить через `.env`:
+
+```bash
+cp .env.example .env
+# VITE_API_BASE_URL=http://localhost:3000
+```
+
+### Сборка и предпросмотр
+
+```bash
+npm run build      # production-сборка в dist/
+npm run preview    # просмотр собранной версии (обычно :4173)
+```
+
+Для history-роутинга сервер предпросмотра Vite отдаёт `index.html` на
+все SPA-маршруты. При размещении на обычном статическом хостинге нужен
+аналогичный rewrite на `index.html` (иначе прямой заход на `/profile`
+вернёт 404).
 
 ### Полезные команды
 
 ```bash
-npm run api        # API + статика на http://localhost:3000
-npm run reset-db   # восстановить db.json из db.seed.json
+npm run api        # API на http://localhost:3000
+npm run dev        # Vite dev-сервер
+npm run build      # production-сборка
+npm run preview    # просмотр dist/
+npm run reset-db   # восстановить db.json из db.seed.json (при остановленном API)
 npm run smoke      # проверить API (нужен запущенный сервер)
 ```
 
@@ -120,6 +96,193 @@ npm run smoke      # проверить API (нужен запущенный с�
 
 В `db.json` пароли хранятся в виде bcrypt-хэшей, поэтому исходные
 значения зафиксированы только в этой таблице.
+
+## Маршруты
+
+| Путь | View | Доступ |
+|---|---|---|
+| `/` | `HomeView` | всем |
+| `/search` | `SearchView` | всем |
+| `/recipe/:id` | `RecipeView` | всем |
+| `/login` | `LoginView` | только гостям (`guestOnly`) |
+| `/register` | `RegisterView` | только гостям (`guestOnly`) |
+| `/profile` | `ProfileView` | только авторизованным (`requiresAuth`) |
+| `/:pathMatch(.*)*` | `NotFoundView` | всем |
+
+Guards находятся в `src/router/index.js`:
+
+- `requiresAuth` — при отсутствии сессии редирект на `/login` с
+  `?redirect=<исходный путь>`;
+- `guestOnly` — уже вошедшего пользователя отправляет в `/profile`;
+- после перехода обновляется `document.title` и фокус переносится на
+  `<main id="main-content">` (улучшение доступности).
+
+Старые адреса MPA-версии (`/pages/login.html` и т. п.) перенаправляются
+на новые маршруты.
+
+## Структура проекта
+
+```text
+recipe-hub-frontend/
+├── index.html                      # точка входа Vite + inline-скрипт темы
+├── vite.config.mjs                 # plugin-vue, alias @ → src
+├── .env.example                    # пример VITE_API_BASE_URL
+├── public/
+│   └── assets/img/                 # sprite.svg, favicon.svg, заглушка
+├── src/
+│   ├── main.js                     # createApp, Pinia, Router, Bootstrap, CSS
+│   ├── App.vue                     # skip-link, шапка, RouterView, подвал, live-region
+│   ├── api/
+│   │   ├── client.js               # axios, interceptors, ApiError, isApiOnline
+│   │   ├── token.js                # JWT: get/save/clear/decode
+│   │   └── resources.js            # users, recipes, comments, likes, bookmarks, subscriptions, auth
+│   ├── stores/
+│   │   ├── auth.js                 # сессия, login/register/logout/restore
+│   │   └── catalog.js              # пользователи, лайки, закладки, подписки, комментарии
+│   ├── composables/
+│   │   ├── useTheme.js             # ДР3
+│   │   ├── useLiveRegion.js        # announce() для ДР2
+│   │   ├── useRecipeSearch.js      # debounce + AbortController
+│   │   └── useBootstrapModal.js    # управление модалками Bootstrap
+│   ├── router/
+│   │   └── index.js                # маршруты, meta, guards, title, focus
+│   ├── components/
+│   │   ├── AppHeader.vue
+│   │   ├── AppFooter.vue
+│   │   ├── ApiStatusBanner.vue
+│   │   ├── BaseIcon.vue            # ДР4
+│   │   ├── ThemeSwitcher.vue       # ДР3
+│   │   ├── RecipeCard.vue
+│   │   ├── RecipeGrid.vue
+│   │   ├── AuthorCard.vue
+│   │   ├── recipe/
+│   │   │   ├── RecipeActions.vue
+│   │   │   ├── CommentsSection.vue
+│   │   │   └── ShareModal.vue
+│   │   └── profile/
+│   │       ├── NewRecipeModal.vue
+│   │       └── EditProfileModal.vue
+│   ├── views/
+│   │   ├── HomeView.vue
+│   │   ├── SearchView.vue
+│   │   ├── RecipeView.vue
+│   │   ├── LoginView.vue
+│   │   ├── RegisterView.vue
+│   │   ├── ProfileView.vue
+│   │   └── NotFoundView.vue
+│   ├── utils/
+│   │   ├── assets.js               # пути к public/assets
+│   │   ├── format.js               # дата и длительность
+│   │   └── validation.js           # проверка e-mail
+│   ├── constants.js                # типы блюд и сложность
+│   └── assets/css/
+│       ├── variables.css           # токены светлой и тёмной темы
+│       └── style.css               # минимальные кастомные стили
+├── server/
+│   └── index.js                    # json-server + auth + guards (только API)
+├── scripts/
+│   ├── reset-db.js
+│   └── smoke.js
+├── db.json                         # рабочая база (в .gitignore)
+├── db.seed.json                    # эталон для сброса
+├── package.json
+└── README.md
+```
+
+## Архитектура клиента
+
+### Слой API
+
+`src/api/client.js` — единственное место с axios:
+
+- `baseURL` из `VITE_API_BASE_URL` (по умолчанию `http://localhost:3000`);
+- request interceptor добавляет `Authorization: Bearer <token>`;
+- response interceptor нормализует ошибки в `ApiError` (`message`,
+  `status`, `details`) и обновляет флаг `isApiOnline`;
+- отменённые запросы (`AbortController`) не считаются ошибками;
+- `buildParams()` собирает query-строку, включая повторяющиеся
+  параметры (`id=1&id=2`) для выборки сохранённых рецептов.
+
+`src/api/resources.js` повторяет контракт ЛР2: `users`, `recipes`,
+`comments`, `likes`, `bookmarks`, `subscriptions`, `auth`.
+
+### Состояние (Pinia)
+
+- **`stores/auth.js`** — `user`, `ready`, `isAuthenticated`;
+  `ensureRestored()` один раз восстанавливает сессию по JWT;
+  `login`/`register` сохраняют токен и сразу загружают коллекции
+  пользователя; `logout` очищает токен и социальное состояние.
+- **`stores/catalog.js`** — справочник пользователей, лайки, закладки,
+  подписки и комментарии. Селекторы `userById`, `userName`, `isLiked`,
+  `isBookmarked`, `isSubscribed`, `commentsFor`; действия
+  `toggleLike`, `toggleBookmark`, `toggleSubscription`,
+  `loadComments`, `addComment`.
+
+Благодаря реактивности Vue карточки, счётчики лайков, бейдж
+«Сохранён» и списки в кабинете обновляются без ручной перерисовки DOM.
+
+### Composable-функции
+
+- **`useTheme`** — режимы `system` / `light` / `dark`, `matchMedia`,
+  сохранение в `localStorage`, синхронизация между вкладками,
+  озвучивание смены темы.
+- **`useLiveRegion`** — единый `announce()` и `role="status"` в `App.vue`.
+- **`useRecipeSearch`** — фильтры, debounce 300 мс, отмена устаревших
+  запросов, сортировка, сброс, текст счётчика.
+- **`useBootstrapModal`** — `show`/`hide` для модалок Bootstrap,
+  обработка закрытия во время анимации открытия и очистка backdrop
+  при размонтировании.
+
+### Компоненты и views
+
+- `AppHeader` / `AppFooter` / `App.vue` — единый каркас вместо
+  копирования шапки и подвала на каждой странице.
+- `RecipeCard` + `RecipeGrid` — карточка и сетка с состояниями
+  загрузки, пустого результата и ошибки.
+- `AuthorCard` — карточка кулинара с подпиской; используется на
+  главной, в кабинете и на странице рецепта.
+- `RecipeActions`, `CommentsSection`, `ShareModal` — социальные
+  функции рецепта.
+- `NewRecipeModal`, `EditProfileModal` — модальные формы кабинета.
+- Views отвечают за загрузку данных и композицию компонентов.
+
+### Пример потока данных
+
+1. Router guard вызывает `auth.ensureRestored()`.
+2. При наличии JWT выполняется `GET /users/:id`, затем
+   `GET /likes?userId=`, `/bookmarks?userId=`, `/subscriptions?userId=`.
+3. `RecipeCard` читает `catalog.isLiked()` / `isBookmarked()` и
+   показывает актуальный счётчик.
+4. Клик по лайку вызывает `catalog.toggleLike()`: запрос к API,
+   обновление массива в store, реактивная перерисовка всех карточек.
+
+
+## Соответствие требованиям ЛР3
+
+| Требование | Где реализовано |
+|---|---|
+| Подключён роутер | `src/router/index.js`; `createRouter` + `createWebHistory`; `App.vue` использует `RouterView` |
+| Маршрутизация: guards и meta | `meta.requiresAuth`, `meta.guestOnly`, `beforeEach`, редирект с `?redirect=` |
+| Работа с внешним API | `src/api/client.js`, `src/api/resources.js`; все запросы через Axios |
+| Разумное деление на компоненты | `src/views` (7 экранов) и `src/components` (общие, recipe/, profile/) |
+| Composable для повторяющегося функционала | `useTheme`, `useLiveRegion`, `useRecipeSearch`, `useBootstrapModal` |
+| Управление состоянием | Pinia: `stores/auth.js`, `stores/catalog.js` |
+
+## Функциональность
+
+- **Вход и регистрация** — JWT, «Запомнить меня», валидация, ошибки
+  API, `aria-invalid`, `aria-busy`, фокус на первой ошибке.
+- **Личный кабинет** — публикации, сохранённые рецепты, подписки;
+  создание рецепта и редактирование профиля в модалках.
+- **Поиск** — фильтры по типу блюда, сложности, ингредиенту и времени,
+  сортировка, счётчик результатов, debounce и отмена запросов.
+- **Страница рецепта** — фото, метаданные, ингредиенты, пошаговые
+  инструкции, видео, автор, лайк, закладка, «Поделиться», комментарии.
+- **Социальные функции** — лайки, закладки, подписки, комментарии;
+  все изменения сохраняются на сервере.
+- **Темы** — светлая, тёмная и «как в системе».
+- **Доступность** — skip-link, ARIA, live-region, фокус, семантика.
+- **SVG-спрайт** — все иконки через `BaseIcon` и `<use>`.
 
 ## API
 
@@ -146,10 +309,10 @@ npm run smoke      # проверить API (нужен запущенный с�
 
 ### Фильтры и сортировка
 
-`json-server` поддерживает query-параметры, которые использует страница
-поиска:
+`json-server` поддерживает query-параметры, которые использует
+`useRecipeSearch`:
 
-```
+```text
 GET /recipes?q=тыква
 GET /recipes?dishType=Супы&difficulty=Средняя
 GET /recipes?timeMinutes_lte=30
@@ -158,7 +321,7 @@ GET /recipes?_sort=likes&_order=desc&_limit=6
 GET /recipes?id=1&id=2
 ```
 
-### Авторизация
+### Авторизация и права
 
 ```bash
 # Вход
@@ -175,77 +338,58 @@ curl http://localhost:3000/users/1 \
 JWT живёт 1 час. При истечении токена клиент очищает его и работает
 как гость; защищённые действия требуют повторного входа.
 
-### Права доступа
-
 В `server/index.js` для всех коллекций задан режим **`644`**:
+владелец может читать и писать, остальные — только читать. Владелец
+определяется по полю `userId` (для `users` — по `id`), поэтому
+`POST /recipes` с чужим `userId` и `PATCH /users/:id` чужого профиля
+возвращают `403`. Поле `password` вырезается из всех ответов.
 
-- `6` — владелец ресурса может читать и писать;
-- `4` — остальные авторизованные могут читать;
-- `4` — гости могут читать.
+## Модель данных
 
-Владелец определяется по полю `userId` (для `users` — по `id`).
-Поэтому `POST /recipes` с чужим `userId` и `PATCH /users/:id` чужого
-профиля возвращают `403`. Поле `password` вырезается из всех ответов
-middleware в `server/index.js`.
+| Коллекция | Основные поля |
+|---|---|
+| `users` | `id`, `email`, `password` (bcrypt), `name`, `bio`, `subscribers` |
+| `recipes` | `id`, `userId`, `title`, `dishType`, `difficulty`, `timeMinutes`, `servings`, `description`, `ingredients[]`, `steps[]`, `image`, `likes`, `videoUrl`, `createdAt` |
+| `comments` | `id`, `recipeId`, `userId`, `text`, `createdAt` |
+| `likes` | `id`, `userId`, `recipeId` |
+| `bookmarks` | `id`, `userId`, `recipeId` |
+| `subscriptions` | `id`, `userId`, `authorId` |
 
-## Как устроен клиент
-
-- **`api.js`** — единственное место с `fetch`. Содержит `ApiError`,
-  работу с токеном, `buildQuery`, методы `users`, `recipes`, `comments`,
-  `likes`, `bookmarks`, `subscriptions` и `auth`.
-- **`store.js`** — кэш пользователей, рецептов, лайков, закладок, подписок
-  и комментариев. После `appReady` страницы читают данные синхронно через
-  селекторы (`getAllRecipes`, `getCurrentUser`, `getUserName` и т. д.).
-- **`main.js`** — `appReady`: восстановление сессии (`GET /users/:id` по
-  JWT) и загрузка справочников. Все страничные модули начинают работу
-  с `await appReady`.
-- **`theme.js`** — светлая/тёмная тема: режимы `system`/`light`/`dark`,
-  `localStorage`, `matchMedia`, переключатель в шапке и live-region.
-- **`recipes.js`** — загрузка ленты (`_sort=likes&_limit=6`) и серверная
-  фильтрация с debounce 300 мс и `AbortController` (устаревшие запросы
-  отменяются).
-- **`auth.js`** — вход и регистрация. Чекбокс «Запомнить меня» выбирает
-  `localStorage` или `sessionStorage` для токена.
-- **`social.js`** — лайки, закладки, подписки и комментарии. После
-  отрисовки рецепта `recipe.js` вызывает `initRecipeSocial(recipe)`, что
-  устраняет гонку инициализации между модулями.
-- **`profile.js`** — публикации, сохранённые, подписки, создание рецепта
-  и редактирование профиля.
 
 ## Доступность (ДР2)
 
-Что сделано:
+После миграции на Vue сохранены и усилены:
 
-- skip-link «Перейти к основному содержимому» и `tabindex="-1"` у `<main>`;
-- лендмарки: `<nav aria-label>` в шапке и подвале, `<aside aria-label="Об авторе">`,
-  поименованные секции и регион результатов поиска;
-- поля форм связаны с ошибками через `aria-describedby`, ошибки выставляют
-  `aria-invalid`, фокус переводится на первое невалидное поле; на время
-  отправки форма получает `aria-busy`;
-- динамические сообщения (комментарий добавлен, ссылка скопирована,
-  рецепт опубликован, профиль обновлён) озвучиваются через общий
-  `role="status"` live-region и функцию `announce()` в `main.js`;
-- у карточки рецепта одна ссылка с понятным именем (вся карточка кликабельна
-  через `stretched-link`), декоративные изображения имеют `alt=""`,
-  декоративные иконки — `aria-hidden="true"`;
-- исправлен порядок заголовков (`h1 → h2 → h3`) на всех страницах,
-  у гостя в личном кабинете и при ненайденном рецепте есть видимый `h1`;
-- контраст по WCAG AA: ссылки `#0a58ca` (6.11 на фоне `#f8f9fa`),
-  контурные кнопки `#5b6269` (5.87), ссылки в алертах через `.alert-link`
-  (7.21);
-- модалки получили `role="dialog"`, `aria-modal="true"` и доступные имена,
-  кнопки-триггеры — `aria-haspopup="dialog"`;
-- у комментариев дата размечена как `<time datetime>`, у iframe — `title`
-  и `loading="lazy"`, добавлены скрытые подписи для времени, лайков и автора.
+- skip-link «Перейти к основному содержимому» и `tabindex="-1"` у
+  `<main id="main-content">` на каждом экране;
+- лендмарки: `<nav aria-label>` в шапке и подвале, `<aside
+  aria-label="Об авторе">`, поименованные секции и регион результатов;
+- после смены маршрута фокус переносится на `<main>` (кроме первой
+  загрузки), а `document.title` обновляется;
+- формы: `label`, `aria-describedby`, `aria-invalid`, `aria-busy`,
+  фокус на первом невалидном поле;
+- динамические сообщения (лайк, закладка, комментарий, публикация,
+  профиль, копирование ссылки, смена темы) озвучиваются через единый
+  live-region (`useLiveRegion`);
+- модалки Bootstrap сохраняют focus trap, `Esc` и возврат фокуса;
+  `useBootstrapModal` дополнительно корректно закрывает окно во время
+  анимации открытия;
+- у карточек одна ссылка с понятным именем (`stretched-link`),
+  декоративные изображения имеют `alt=""`, иконки — `aria-hidden`;
+- сохранён порядок заголовков `h1 → h2 → h3` на всех экранах;
+- контраст по WCAG AA не менялся: токены `--rh-*` и пары цветов
+  описаны в `src/assets/css/variables.css`.
 
-Проверка:
+В ДР2 доступность проверялась через Firefox Accessibility Inspector
+и Lighthouse. После миграции разметка и ARIA сохранены; при защите
+ЛР3 рекомендуется повторно прогнать Lighthouse на маршрутах `/`,
+`/search`, `/recipe/:id`, `/login`, `/register`, `/profile`.
 
-1. `npm run api`, открыть страницы на `http://localhost:3000/`.
-2. Firefox → DevTools → Accessibility: роли, доступные имена, контраст.
-3. Lighthouse (категория Accessibility) на главной, входе, регистрации,
-   поиске, странице рецепта и в личном кабинете.
-4. Клавиатура: Tab/Shift+Tab, skip-link, модалки (Esc и возврат фокуса),
-   табы профиля, отправка форм с ошибками.
+Дополнительно после миграции выполнена проверка **axe-core 4.14**
+(теги WCAG 2.0/2.1 A и AA) на production-сборке: главная (светлая и
+тёмная тема), поиск, рецепт, вход, регистрация, 404 и все вкладки
+личного кабинета. Нарушений **0**. В ходе проверки был исправлен
+контраст бейджа «Сохранён» (`.rh-badge-saved`).
 
 ## Темизация (ДР3)
 
@@ -257,31 +401,21 @@ middleware в `server/index.js`.
 | Тёмная | `dark` | выбрана вручную или системная тёмная |
 
 По умолчанию используется режим **«Как в системе»**: тема следует за
-`prefers-color-scheme` и меняется на лету, если ОС переключает оформление.
-Ручной выбор («Светлая»/«Тёмная») сохраняется в `localStorage` под ключом
-`recipehub-theme` и переопределяет системную настройку.
+`prefers-color-scheme` и меняется на лету. Ручной выбор сохраняется в
+`localStorage` под ключом `recipehub-theme`.
 
 Что сделано:
 
-- `assets/css/variables.css` — два набора токенов `--rh-*` (светлый и тёмный)
-  и проброс в `--bs-*`: `--bs-body-bg`, `--bs-body-color`,
-  `--bs-secondary-color`, `--bs-border-color`, `--bs-link-color` и другие.
-  Благодаря этому карточки, модалки, дропдауны, формы и `btn-close`
-  переключаются без отдельных правил;
-- `assets/css/style.css` — все цвета переведены на токены, добавлен
-  темизируемый бейдж `.rh-badge`;
-- `assets/js/theme.js` — `initTheme()`, `setThemePreference()`,
-  `resolveTheme()`: обработка меню, `matchMedia`, синхронизация между
-  вкладками через `storage`, обновление `aria-pressed` и озвучивание
-  через общий live-region;
-- в `<head>` каждой страницы — небольшой inline-скрипт, который применяет
-  сохранённую/системную тему до загрузки CSS и предотвращает вспышку
-  светлого экрана (FOUC);
-- в шапке — доступный переключатель «Тема оформления» с пунктами
-  «Как в системе», «Светлая», «Тёмная».
-
-Bootstrap 5.3 читает `data-bs-theme` сам, поэтому его color modes и наши
-токены всегда синхронны.
+- `src/assets/css/variables.css` — два набора токенов `--rh-*` и
+  проброс в `--bs-*`;
+- `src/assets/css/style.css` — кастомные стили только на токенах;
+- `src/composables/useTheme.js` — `setThemePreference`, `matchMedia`,
+  синхронизация между вкладками, озвучивание;
+- `src/components/ThemeSwitcher.vue` — доступное меню с
+  `aria-pressed` и иконками `sun` / `moon` / `monitor` / `check`;
+- в `index.html` — inline-скрипт, который применяет сохранённую или
+  системную тему до загрузки CSS и предотвращает вспышку светлого
+  экрана (FOUC).
 
 Контраст (WCAG 2.1 AA, все пары ≥ 4.5):
 
@@ -306,100 +440,94 @@ Bootstrap 5.3 читает `data-bs-theme` сам, поэтому его color m
 
 ## SVG-спрайт (ДР4)
 
-Все иконки лежат в `assets/img/sprite.svg` и подключаются через `<use>`:
+Все иконки лежат в `public/assets/img/sprite.svg`, а компонент
+`BaseIcon.vue` собирает путь от `BASE_URL`:
 
-```html
-<svg class="rh-icon" aria-hidden="true">
-  <use href="../assets/img/sprite.svg#icon-clock"></use>
-</svg>
+```vue
+<BaseIcon name="clock" class="me-1" />
 ```
-
-В спрайте **17 символов**, и все используются:
-
-| Группа | Иконки |
-|---|---|
-| Навигация и действия | `search`, `filter`, `user`, `users`, `plus`, `edit`, `logout` |
-| Контент | `clock`, `heart`, `bookmark`, `chat`, `star`, `play` |
-| Тема | `sun`, `moon`, `monitor`, `check` |
 
 Правила:
 
 - декоративная иконка всегда `aria-hidden="true"`, смысл передаётся
   текстом или доступным именем кнопки;
-- размер задаёт `.rh-icon` (1em), цвет наследуется через `currentColor`;
+- размер задаёт `.rh-icon` (1em), цвет наследуется через
+  `currentColor`;
 - новые иконки добавляются как `<symbol id="icon-…" viewBox="0 0 24 24">`
-  и используются только через `<use>`, без копирования путей в HTML;
-- в спрайте нет неиспользуемых символов: проверка сопоставляет все
-  `#icon-*` из HTML/JS с `id` в `sprite.svg`.
-
-Иконки темы (`sun`, `moon`, `monitor`, `check`) добавлены в ДР4;
-`users`, `edit`, `logout`, `chat`, `star`, `play` были задействованы
-в интерфейсе, а неиспользуемые `eye` и `close` удалены.
-
-## Модель данных
-
-| Коллекция | Основные поля |
-|---|---|
-| `users` | `id`, `email`, `password` (bcrypt), `name`, `bio`, `subscribers` |
-| `recipes` | `id`, `userId`, `title`, `dishType`, `difficulty`, `timeMinutes`, `servings`, `description`, `ingredients[]`, `steps[]`, `image`, `likes`, `videoUrl`, `createdAt` |
-| `comments` | `id`, `recipeId`, `userId`, `text`, `createdAt` |
-| `likes` | `id`, `userId`, `recipeId` |
-| `bookmarks` | `id`, `userId`, `recipeId` |
-| `subscriptions` | `id`, `userId`, `authorId` |
-
-## Отличия от ЛР1
-
-- Удалены `data.js` и `storage.js`: данные и состояние приложения
-  перенесены на сервер.
-- Поле `authorId` в рецептах и комментариях заменено на `userId` —
-  этого требует механизм проверки владельца в `json-server-auth`.
-- Блок «Популярные кулинары» на главной рендерится из API, а не вручную.
-- Добавлены состояния загрузки (`aria-busy`), сообщения об ошибках API
-  и баннер, если сервер не запущен.
-- `localStorage` используется для JWT и настройки темы `recipehub-theme`.
+  и используются только через `<use>`;
+- в спрайте 17 символов, все используются.
 
 ## Проверка
+
+### Сборка
+
+```bash
+npm run build
+```
+
+Сборка Vite проходит без ошибок; результат — `dist/`.
+
+### API
 
 ```bash
 npm run api
 npm run smoke
 ```
 
-`npm run smoke` проверяет чтение, вход, скрытие пароля, `401` без токена,
-`403` на чужой ресурс, создание/удаление своего рецепта и фильтры.
-На текущей базе проходят **9 из 9** проверок.
+`npm run smoke` проверяет чтение, вход, скрытие пароля, `401` без
+токена, `403` на чужой ресурс, создание/удаление своего рецепта и
+фильтры — **9 из 9** проверок.
 
-Дополнительно вручную проверены сценарии: гость → вход → лайк (42 → 43)
-→ закладка → перезагрузка (состояние сохранилось) → сохранённые в
-профиле → комментарий → повторная регистрация с занятым e-mail → подписка
-→ редактирование профиля → создание рецепта → выход → регистрация нового
-пользователя.
+### Сценарии в браузере
 
-Дополнительно проверено в ДР3/ДР4: 30 цветовых пар — все ≥ 4.5;
-Lighthouse Accessibility — 100 на шести страницах; axe-core 4.14 —
-0 нарушений в светлой и тёмной теме (включая авторизованный профиль);
-переключение темы, сохранение выбора и следование системной настройке
-проверены в Chrome 155 через CDP.
+Миграция проверена в headless Chrome (Puppeteer) на dev-сервере:
+
+- главная: лента и кулинары загружаются из API;
+- тема: переключение на тёмную и запись в `localStorage`;
+- router guard: гость с `/profile` попадает на `/login?redirect=…`;
+- вход демо-аккаунтом и открытие кабинета;
+- поиск с `?query=суп` и фильтром по типу блюда;
+- страница рецепта: лайк (счётчик +1), закладка, комментарий,
+  подписка, модалка «Поделиться»;
+- кабинет: сохранённые рецепты, подписки, создание рецепта,
+  редактирование профиля;
+- выход и регистрация нового пользователя;
+- консоль браузера без ошибок.
+
+Все перечисленные сценарии прошли. Тестовые изменения в `db.json`
+после проверки откатываются (`npm run reset-db` или резервная копия).
+
+## Отличия от ЛР2
+
+- MPA (`pages/*.html`) заменено на SPA с Vue Router.
+- `fetch` заменён на Axios с interceptors.
+- `store.js` заменён на Pinia-хранилища `auth` и `catalog`.
+- Страничные модули `auth.js`, `recipes.js`, `recipe.js`, `profile.js`,
+  `social.js` заменены на views и компоненты.
+- `theme.js` и `main.js`-хелперы заменены на composables.
+- Шапка и подвал больше не дублируются в HTML — они в `App.vue`.
+- Ручной `innerHTML` и `escapeHtml` больше не нужны: Vue экранирует
+  данные сам.
+- Иконки подключаются через `BaseIcon`, пути к картинкам — через
+  `assetUrl` (работает на вложенных маршрутах).
+- `json-server` больше не раздаёт фронтенд: API и Vite запускаются
+  отдельно.
+- Bootstrap подключается из npm, локальная папка `assets/vendor`
+  удалена.
 
 ## Ограничения
 
 - JWT живёт 1 час и не обновляется; при `401` требуется повторный вход.
 - `json-server` — учебный мок, а не production-бэкенд.
-- Для работы приложения нужен локальный API-сервер: размещение только
-  статических файлов (например, на GitHub Pages) не обеспечит работу
-  авторизации и данных.
-- `db.json` изменяется при работе. Для возврата к исходным данным
-  используйте `npm run reset-db`.
+- Для работы приложения нужны два процесса: `npm run api` и
+  `npm run dev` (или собранный `dist/` + API).
+- History-роутинг требует fallback на `index.html`; Vite dev/preview
+  это делают, обычный статический хостинг — нет.
+- `db.json` изменяется при работе и не хранится в git; для возврата
+  к исходным данным используйте `npm run reset-db`.
 - Пароли демо-аккаунтов известны и предназначены только для проверки.
 - Переключатель темы требует JavaScript; без JS остаётся светлая тема
-  по умолчанию (атрибут `data-bs-theme="light"` в разметке).
-- Фотографии рецептов и SVG-заглушка не перекрашиваются темой: это контент,
-  а не элемент интерфейса.
-
-## Дальше — ЛР3
-
-Осталась миграция приложения на Vue (ЛР3). Клиентский слой уже разделён
-по зонам ответственности (`api` / `store` / страничные модули), поэтому
-при переходе на Vue логично ляжет на `axios`, composables, Vue Router
-и хранилище состояния.
+  по умолчанию.
+- Фотографии рецептов и SVG-заглушка не перекрашиваются темой: это
+  контент, а не элемент интерфейса.
 
